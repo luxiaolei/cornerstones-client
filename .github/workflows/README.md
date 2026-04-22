@@ -5,7 +5,7 @@
 - local preflight mirror: `python scripts/verify_release_readiness.py`
 
 ## Publish
-- `publish.yml` is prepared but requires repo secrets before it can publish.
+- `publish.yml` publishes to TestPyPI or PyPI through repo secrets.
 - Required secrets:
   - `TEST_PYPI_API_TOKEN`
   - `PYPI_API_TOKEN`

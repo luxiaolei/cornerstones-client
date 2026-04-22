@@ -29,9 +29,15 @@ cornerstones-client auth status
 
 ## Install
 
-Public PyPI publication is being prepared but is not live yet.
+`cornerstones-client` is now live on PyPI.
 
-Until the first public release, install from a checked-out source tree or from a locally built wheel:
+Install from PyPI:
+
+```bash
+python -m pip install cornerstones-client
+```
+
+Development/source install still works when you need local edits:
 
 ```bash
 python -m pip install .
@@ -93,4 +99,4 @@ This repo now includes GitHub Actions workflows for:
 - CI verification on push and pull request
 - package build + metadata checks
 - smoke install of built wheel
-- manual or release-driven publish workflow once PyPI/TestPyPI tokens are configured
+- manual or release-driven publish workflow for TestPyPI and PyPI releases

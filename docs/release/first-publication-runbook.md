@@ -2,17 +2,18 @@
 
 ## Current verified truth
 
-As of 2026-04-22 on NY-Ubuntu:
+As of 2026-04-22 on NY-Ubuntu after first publication:
 
 - local `pytest -q` passes
 - local package build passes
 - local `twine check dist/*` passes
 - clean-venv wheel smoke install passes
 - GitHub Actions CI exists and has passed on `main`
-- live package endpoints are still absent:
-  - `https://pypi.org/pypi/cornerstones-client/json` -> `404`
-  - `https://test.pypi.org/pypi/cornerstones-client/json` -> `404`
-- repo publish secrets are currently missing:
+- TestPyPI package endpoint is live:
+  - `https://test.pypi.org/pypi/cornerstones-client/json` -> `200`
+- PyPI package endpoint is live:
+  - `https://pypi.org/pypi/cornerstones-client/json` -> `200`
+- repo publish secrets are configured:
   - `TEST_PYPI_API_TOKEN`
   - `PYPI_API_TOKEN`
 
@@ -226,7 +227,9 @@ cd /home/trader/.openclaw/workspace-main/cornerstones-client
 /home/trader/miniconda3/bin/python scripts/verify_release_readiness.py
 ```
 
-Current expected blockers on this repo:
+Current expected state on this repo:
 
-- `GitHub repo missing required publish secrets: TEST_PYPI_API_TOKEN, PYPI_API_TOKEN.`
-- `Package not yet live on PyPI or TestPyPI.`
+- `TEST_PYPI_API_TOKEN` configured
+- `PYPI_API_TOKEN` configured
+- package live on TestPyPI
+- package live on PyPI
