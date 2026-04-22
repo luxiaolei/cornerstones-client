@@ -1,0 +1,7 @@
+__pycache__/
+.pytest_cache/
+build/
+dist/
+src/*.egg-info/
+src/cornerstones_client.egg-info/
+*.pyc

@@ -1,0 +1,4 @@
+Copyright (c) Xiaolei Lu.
+All rights reserved.
+
+This package remains proprietary pending publication decisions.
