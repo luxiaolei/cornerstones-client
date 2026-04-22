@@ -233,3 +233,4 @@ Current expected state on this repo:
 - `PYPI_API_TOKEN` configured
 - package live on TestPyPI
 - package live on PyPI
+- package docs/changelog may still need follow-up sync whenever the managed `cornerstones` service adds new public-safe product truth

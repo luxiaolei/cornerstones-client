@@ -89,8 +89,16 @@ Stored fields currently include:
 
 ## Status
 
-This package is a pre-release public-safe client surface under active productization.
-Current focus is packaging hardening, truthful onboarding, stable discovery flows, and release automation.
+This package is a public-safe client surface under active productization and is now published on PyPI.
+Current focus is truthful onboarding, stable discovery flows, and keeping package-side docs aligned with the managed Cornerstones product truth.
+
+Recent managed-product truth now reflected upstream through discovery and changelog surfaces includes:
+
+- signed trial-backed discovery access for bounded `guide` / `changelog` flows
+- objective rolling correlation evidence in cross-asset context
+- continued hardening around bounded stocks and options workflows
+
+The client is intentionally thin: many managed-service feature additions should flow through server-owned discovery and changelog surfaces without requiring a package code change.
 
 ## Repository automation
 
