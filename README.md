@@ -37,7 +37,21 @@ Until the first public release, install from a checked-out source tree or from a
 python -m pip install .
 ```
 
-For local packaging verification:
+For machine-checkable local release readiness on a packaging host:
+
+```bash
+python scripts/verify_release_readiness.py
+```
+
+That preflight verifies:
+
+- `pytest -q`
+- local `build` + `twine check`
+- clean-venv wheel smoke install
+- current PyPI/TestPyPI package presence
+- current GitHub publish-secret presence
+
+For local packaging verification by hand:
 
 ```bash
 python -m build
