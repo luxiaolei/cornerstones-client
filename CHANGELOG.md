@@ -9,3 +9,4 @@ All notable changes to `cornerstones-client` will be documented in this file.
 - Added anonymous trial start, trial status, and discovery-token commands
 - Added public-safe `guide`, `changelog`, and authenticated `verify` flows
 - Added packaging metadata and smoke-verification workflow for build/install checks
+- Added GitHub Actions CI and publish workflow scaffolding for repo-local verification and future TestPyPI/PyPI release automation

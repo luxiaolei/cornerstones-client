@@ -66,4 +66,13 @@ Stored fields currently include:
 ## Status
 
 This package is a pre-release public-safe client surface under active productization.
-Current focus is packaging hardening, truthful onboarding, and stable discovery flows.
+Current focus is packaging hardening, truthful onboarding, stable discovery flows, and release automation.
+
+## Repository automation
+
+This repo now includes GitHub Actions workflows for:
+
+- CI verification on push and pull request
+- package build + metadata checks
+- smoke install of built wheel
+- manual or release-driven publish workflow once PyPI/TestPyPI tokens are configured
