@@ -51,6 +51,10 @@ That preflight verifies:
 - current PyPI/TestPyPI package presence
 - current GitHub publish-secret presence
 
+Human-side first-publication runbook:
+
+- `docs/release/first-publication-runbook.md`
+
 For local packaging verification by hand:
 
 ```bash

@@ -13,3 +13,5 @@
   - Actions -> Publish Package -> Run workflow -> choose `testpypi` or `pypi`
 - Release trigger:
   - publishing to real PyPI also runs automatically when a GitHub Release is published.
+- Human-side first-publication runbook:
+  - `docs/release/first-publication-runbook.md`
