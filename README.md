@@ -65,7 +65,7 @@ For local packaging verification by hand:
 
 ```bash
 python -m build
-python -m pip install dist/cornerstones_client-0.1.0-py3-none-any.whl
+python -m pip install dist/cornerstones_client-0.1.1-py3-none-any.whl
 cornerstones-client --help
 ```
 

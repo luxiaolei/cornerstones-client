@@ -4,6 +4,8 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.1
+
 - Synced package docs to current managed Cornerstones product truth after first publication
 - Clarified that bounded `guide` / `changelog` discovery flows track server-owned truth surfaces, including signed trial-backed discovery access and the latest cross-asset correlation-evidence additions
 - Kept the client package thin instead of adding premature package-side wrappers for upstream product reads that already flow through discovery/changelog endpoints
