@@ -7,7 +7,7 @@ from typing import Any
 
 import httpx
 
-from .config import load_config, save_config
+from .config import DEFAULT_API_BASE_URL, DEFAULT_PORTAL_BASE_URL, load_config, save_config
 
 
 def _print(payload: dict[str, Any]) -> None:
@@ -42,12 +42,12 @@ def build_headers(config: dict[str, Any], *, allow_trial: bool = False, require_
 
 def _portal_base_url(config: dict[str, Any] | None = None) -> str:
     payload = config or load_config()
-    return payload.get("portal_base_url", "http://127.0.0.1:3001").rstrip("/")
+    return payload.get("portal_base_url", DEFAULT_PORTAL_BASE_URL).rstrip("/")
 
 
 def _api_base_url(config: dict[str, Any] | None = None) -> str:
     payload = config or load_config()
-    return payload.get("api_base_url", "http://127.0.0.1:8100").rstrip("/")
+    return payload.get("api_base_url", DEFAULT_API_BASE_URL).rstrip("/")
 
 
 def _store_trial_state(config: dict[str, Any], response: httpx.Response) -> dict[str, Any]:

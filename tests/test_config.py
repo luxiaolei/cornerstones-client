@@ -3,7 +3,22 @@ from pathlib import Path
 from cornerstones_client.config import load_config, save_config
 
 
-def test_load_config_defaults_include_portal_and_api_urls(monkeypatch, tmp_path):
+def test_load_config_defaults_include_public_portal_and_api_urls(monkeypatch, tmp_path):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    monkeypatch.delenv("CORNERSTONES_PORTAL_BASE_URL", raising=False)
+    monkeypatch.delenv("CORNERSTONES_BASE_URL", raising=False)
+    monkeypatch.delenv("CORNERSTONES_API_BASE_URL", raising=False)
+
+    config = load_config()
+
+    assert config["portal_base_url"] == "https://www.usecornerstones.com"
+    assert config["api_base_url"] == "https://api.usecornerstones.com"
+    assert config["api_key"] is None
+    assert config["trial_cookie"] is None
+    assert config["trial_token"] is None
+
+
+def test_load_config_allows_operator_override_for_local_development(monkeypatch, tmp_path):
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
     monkeypatch.setenv("CORNERSTONES_PORTAL_BASE_URL", "http://127.0.0.1:3001")
     monkeypatch.setenv("CORNERSTONES_API_BASE_URL", "http://127.0.0.1:8100")
@@ -12,9 +27,6 @@ def test_load_config_defaults_include_portal_and_api_urls(monkeypatch, tmp_path)
 
     assert config["portal_base_url"] == "http://127.0.0.1:3001"
     assert config["api_base_url"] == "http://127.0.0.1:8100"
-    assert config["api_key"] is None
-    assert config["trial_cookie"] is None
-    assert config["trial_token"] is None
 
 
 def test_save_config_roundtrip_preserves_trial_token(monkeypatch, tmp_path):
@@ -23,7 +35,7 @@ def test_save_config_roundtrip_preserves_trial_token(monkeypatch, tmp_path):
     payload = {
         "portal_base_url": "http://portal.example",
         "api_base_url": "http://api.example",
-        "api_key": "csk_live_secret",
+        "api_key": "***",
         "trial_cookie": "cornerstones_trial_session=abc",
         "trial_token": "ctrial_abc.def",
     }

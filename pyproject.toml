@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cornerstones-client"
-version = "0.1.1"
+version = "0.1.2"
 description = "Public-safe Cornerstones client CLI for managed market context access"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -35,9 +35,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://cornerstones-web.vercel.app/"
-Documentation = "https://cornerstones-web.vercel.app/docs/beta-overview"
-Changelog = "https://cornerstones-web.vercel.app/docs/cli-guide"
+Homepage = "https://www.usecornerstones.com/"
+Documentation = "https://www.usecornerstones.com/docs/beta-overview"
+Changelog = "https://www.usecornerstones.com/docs/cli-guide"
 
 [project.scripts]
 cornerstones-client = "cornerstones_client.cli:main"

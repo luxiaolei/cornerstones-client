@@ -15,12 +15,16 @@ def get_config_path() -> Path:
     return get_config_dir() / "config.json"
 
 
+DEFAULT_PORTAL_BASE_URL = "https://www.usecornerstones.com"
+DEFAULT_API_BASE_URL = "https://api.usecornerstones.com"
+
+
 def default_portal_base_url() -> str:
-    return os.getenv("CORNERSTONES_PORTAL_BASE_URL") or os.getenv("CORNERSTONES_BASE_URL") or "http://127.0.0.1:3001"
+    return os.getenv("CORNERSTONES_PORTAL_BASE_URL") or os.getenv("CORNERSTONES_BASE_URL") or DEFAULT_PORTAL_BASE_URL
 
 
 def default_api_base_url() -> str:
-    return os.getenv("CORNERSTONES_API_BASE_URL") or "http://127.0.0.1:8100"
+    return os.getenv("CORNERSTONES_API_BASE_URL") or DEFAULT_API_BASE_URL
 
 
 def default_config() -> dict[str, Any]:

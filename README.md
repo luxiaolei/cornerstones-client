@@ -16,15 +16,23 @@ Public-safe CLI for the managed Cornerstones product.
 ## Current command surface
 
 ```bash
-cornerstones-client auth set-base-url --base-url https://your-cornerstones-portal
-cornerstones-client auth set-api-base-url --api-base-url https://your-cornerstones-api
+python -m pip install cornerstones-client
 cornerstones-client trial start
-cornerstones-client trial token
 cornerstones-client guide
-cornerstones-client changelog
 cornerstones-client auth login --api-key <issued-api-key>
 cornerstones-client verify
-cornerstones-client auth status
+```
+
+Defaults are hosted and user-safe:
+
+- portal: `https://www.usecornerstones.com`
+- API: `https://api.usecornerstones.com`
+
+Local operators can still override for development:
+
+```bash
+cornerstones-client auth set-base-url --base-url http://127.0.0.1:3001
+cornerstones-client auth set-api-base-url --api-base-url http://127.0.0.1:8100
 ```
 
 ## Install
