@@ -4,6 +4,20 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.3
+
+- Added authenticated CLI wrappers for new Core API alignment surfaces:
+  - `evidence feed` for live-backed evidence feed reads
+  - `alerts metrics`, `alerts recent`, and `alerts dead-letter` for cleaned alert tail checks
+  - `context fx`, `context gold`, and `context stocks` for market context smoke/E2E checks
+- Synced package version metadata with the hosted Core API upgrade line
+- Added tests for the new CLI route mappings and package version guard
+
+## 0.1.2
+
+- Cut hosted-defaults release on PyPI
+- Kept default portal/API URLs pointed at hosted managed service endpoints
+
 ## 0.1.1
 
 - Synced package docs to current managed Cornerstones product truth after first publication

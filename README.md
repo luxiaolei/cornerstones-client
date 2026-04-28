@@ -21,6 +21,13 @@ cornerstones-client trial start
 cornerstones-client guide
 cornerstones-client auth login --api-key <issued-api-key>
 cornerstones-client verify
+cornerstones-client evidence feed --asset XAUUSD --limit 5
+cornerstones-client alerts metrics
+cornerstones-client alerts recent --limit 5
+cornerstones-client alerts dead-letter --limit 5
+cornerstones-client context fx --symbol XAUUSD
+cornerstones-client context gold --symbol XAUUSD
+cornerstones-client context stocks --symbol AAPL
 ```
 
 Defaults are hosted and user-safe:

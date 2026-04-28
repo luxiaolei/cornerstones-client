@@ -153,17 +153,69 @@ def _run_discovery_route(route: str) -> None:
     _print(response.json())
 
 
-def cmd_verify(_: argparse.Namespace) -> None:
+def _authenticated_get(route: str, *, params: dict[str, Any] | None = None, error: str = "request_failed") -> dict[str, Any]:
     config = load_config()
-    with httpx.Client(timeout=20.0) as client:
-        response = client.get(f"{_api_base_url(config)}/v1/status", headers=build_headers(config, require_api_key=True))
+    with httpx.Client(timeout=30.0) as client:
+        response = client.get(
+            f"{_api_base_url(config)}{route}",
+            headers=build_headers(config, require_api_key=True),
+            params=params,
+        )
     if response.status_code >= 400:
         try:
             payload = response.json()
         except Exception:
             payload = {}
-        _fail(payload.get("error", "verify_failed"), payload.get("message", response.text), status_code=response.status_code)
-    _print(response.json())
+        _fail(payload.get("error", error), payload.get("message", response.text), status_code=response.status_code)
+    payload = response.json()
+    if isinstance(payload, dict):
+        return payload
+    return {"data": payload}
+
+
+def _compact_params(raw: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in raw.items() if value is not None}
+
+
+def cmd_verify(_: argparse.Namespace) -> None:
+    _print(_authenticated_get("/v1/status", error="verify_failed"))
+
+
+def cmd_evidence(args: argparse.Namespace) -> None:
+    if args.evidence_cmd == "feed":
+        params = _compact_params({
+            "limit": args.limit,
+            "assets": args.asset or None,
+            "types": args.type or None,
+            "priority": args.priority,
+        })
+        _print(_authenticated_get("/v1/evidence/feed", params=params, error="evidence_feed_failed"))
+        return
+
+
+def cmd_alerts(args: argparse.Namespace) -> None:
+    routes = {
+        "metrics": "/v1/alerts/metrics",
+        "recent": "/v1/alerts/recent",
+        "dead-letter": "/v1/alerts/dead-letter",
+    }
+    params = _compact_params({"limit": getattr(args, "limit", None)})
+    _print(_authenticated_get(routes[args.alerts_cmd], params=params, error="alerts_request_failed"))
+
+
+def cmd_context(args: argparse.Namespace) -> None:
+    if args.context_cmd == "fx":
+        params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "count": args.count})
+        _print(_authenticated_get("/v1/context/fx", params=params, error="context_fx_failed"))
+        return
+    if args.context_cmd == "gold":
+        params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "count": args.count})
+        _print(_authenticated_get("/v1/gold/context", params=params, error="context_gold_failed"))
+        return
+    if args.context_cmd == "stocks":
+        params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "count": args.count})
+        _print(_authenticated_get("/v1/stocks/context", params=params, error="context_stocks_failed"))
+        return
 
 
 def main() -> None:
@@ -200,6 +252,44 @@ def main() -> None:
 
     changelog_parser = sub.add_parser("changelog", help="Fetch product changelog using an API key or trial token")
     changelog_parser.set_defaults(func=lambda args: _run_discovery_route("/v1/changelog"))
+
+    evidence_parser = sub.add_parser("evidence", help="Read authenticated evidence surfaces")
+    evidence_sub = evidence_parser.add_subparsers(dest="evidence_cmd", required=True)
+    evidence_feed = evidence_sub.add_parser("feed", help="Fetch live-backed evidence feed")
+    evidence_feed.add_argument("--limit", type=int, default=10)
+    evidence_feed.add_argument("--asset", action="append", help="Filter by asset; repeatable")
+    evidence_feed.add_argument("--type", action="append", help="Filter by evidence type; repeatable")
+    evidence_feed.add_argument("--priority")
+    evidence_feed.set_defaults(func=cmd_evidence)
+
+    alerts_parser = sub.add_parser("alerts", help="Read authenticated alert status surfaces")
+    alerts_sub = alerts_parser.add_subparsers(dest="alerts_cmd", required=True)
+    alerts_metrics = alerts_sub.add_parser("metrics", help="Fetch alert metrics")
+    alerts_metrics.set_defaults(func=cmd_alerts)
+    alerts_recent = alerts_sub.add_parser("recent", help="Fetch recent alert deliveries")
+    alerts_recent.add_argument("--limit", type=int, default=10)
+    alerts_recent.set_defaults(func=cmd_alerts)
+    alerts_dead = alerts_sub.add_parser("dead-letter", help="Fetch alert dead-letter tail")
+    alerts_dead.add_argument("--limit", type=int, default=10)
+    alerts_dead.set_defaults(func=cmd_alerts)
+
+    context_parser = sub.add_parser("context", help="Read authenticated market context surfaces")
+    context_sub = context_parser.add_subparsers(dest="context_cmd", required=True)
+    context_fx = context_sub.add_parser("fx", help="Fetch FX context")
+    context_fx.add_argument("--symbol", default="XAUUSD")
+    context_fx.add_argument("--timeframe", default="1h")
+    context_fx.add_argument("--count", type=int, default=5)
+    context_fx.set_defaults(func=cmd_context)
+    context_gold = context_sub.add_parser("gold", help="Fetch gold context")
+    context_gold.add_argument("--symbol", default="XAUUSD")
+    context_gold.add_argument("--timeframe", default="1h")
+    context_gold.add_argument("--count", type=int, default=5)
+    context_gold.set_defaults(func=cmd_context)
+    context_stocks = context_sub.add_parser("stocks", help="Fetch stock context")
+    context_stocks.add_argument("--symbol", default="AAPL")
+    context_stocks.add_argument("--timeframe", default="1d")
+    context_stocks.add_argument("--count", type=int, default=5)
+    context_stocks.set_defaults(func=cmd_context)
 
     verify_parser = sub.add_parser("verify", help="Verify a real authenticated API key against /v1/status")
     verify_parser.set_defaults(func=cmd_verify)
