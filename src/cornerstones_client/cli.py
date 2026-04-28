@@ -203,6 +203,25 @@ def cmd_alerts(args: argparse.Namespace) -> None:
     _print(_authenticated_get(routes[args.alerts_cmd], params=params, error="alerts_request_failed"))
 
 
+def cmd_fx(args: argparse.Namespace) -> None:
+    if args.fx_cmd == "quote":
+        params = _compact_params({"symbol": args.symbol})
+        _print(_authenticated_get("/v1/fx/quote", params=params, error="fx_quote_failed"))
+        return
+    if args.fx_cmd == "bars":
+        params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "count": args.count})
+        _print(_authenticated_get("/v1/fx/bars", params=params, error="fx_bars_failed"))
+        return
+    if args.fx_cmd == "indicators":
+        params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "bars": args.bars})
+        _print(_authenticated_get("/v1/fx/indicators", params=params, error="fx_indicators_failed"))
+        return
+    if args.fx_cmd == "session":
+        params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "bars": args.bars})
+        _print(_authenticated_get("/v1/fx/session", params=params, error="fx_session_failed"))
+        return
+
+
 def cmd_context(args: argparse.Namespace) -> None:
     if args.context_cmd == "fx":
         params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "count": args.count})
@@ -272,6 +291,27 @@ def main() -> None:
     alerts_dead = alerts_sub.add_parser("dead-letter", help="Fetch alert dead-letter tail")
     alerts_dead.add_argument("--limit", type=int, default=10)
     alerts_dead.set_defaults(func=cmd_alerts)
+
+    fx_parser = sub.add_parser("fx", help="Read authenticated FX currency-pair surfaces")
+    fx_sub = fx_parser.add_subparsers(dest="fx_cmd", required=True)
+    fx_quote = fx_sub.add_parser("quote", help="Fetch latest FX/currency-pair quote")
+    fx_quote.add_argument("--symbol", required=True, help="Currency pair or metal pair, e.g. EURUSD or XAUUSD")
+    fx_quote.set_defaults(func=cmd_fx)
+    fx_bars = fx_sub.add_parser("bars", help="Fetch FX/currency-pair bars")
+    fx_bars.add_argument("--symbol", required=True)
+    fx_bars.add_argument("--timeframe", default="1h")
+    fx_bars.add_argument("--count", type=int, default=10)
+    fx_bars.set_defaults(func=cmd_fx)
+    fx_indicators = fx_sub.add_parser("indicators", help="Fetch FX/currency-pair indicators")
+    fx_indicators.add_argument("--symbol", required=True)
+    fx_indicators.add_argument("--timeframe", default="H1")
+    fx_indicators.add_argument("--bars", type=int, default=200)
+    fx_indicators.set_defaults(func=cmd_fx)
+    fx_session = fx_sub.add_parser("session", help="Fetch FX/currency-pair session summary")
+    fx_session.add_argument("--symbol", required=True)
+    fx_session.add_argument("--timeframe", default="H1")
+    fx_session.add_argument("--bars", type=int, default=200)
+    fx_session.set_defaults(func=cmd_fx)
 
     context_parser = sub.add_parser("context", help="Read authenticated market context surfaces")
     context_sub = context_parser.add_subparsers(dest="context_cmd", required=True)

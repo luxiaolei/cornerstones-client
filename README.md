@@ -21,11 +21,11 @@ cornerstones-client trial start
 cornerstones-client guide
 cornerstones-client auth login --api-key <issued-api-key>
 cornerstones-client verify
-cornerstones-client evidence feed --asset XAUUSD --limit 5
-cornerstones-client alerts metrics
-cornerstones-client alerts recent --limit 5
-cornerstones-client alerts dead-letter --limit 5
+cornerstones-client fx quote --symbol EURUSD
+cornerstones-client fx bars --symbol EURUSD --timeframe 1h --count 50
+cornerstones-client fx indicators --symbol USDJPY --timeframe H1 --bars 200
 cornerstones-client context fx --symbol XAUUSD
+cornerstones-client evidence feed --asset XAUUSD --limit 5
 cornerstones-client context gold --symbol XAUUSD
 cornerstones-client context stocks --symbol AAPL
 ```

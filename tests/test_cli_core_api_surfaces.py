@@ -85,5 +85,21 @@ def test_context_stocks_command_hits_stocks_context_surface(monkeypatch, capsys)
     assert url == "http://api.test/v1/stocks/context"
 
 
+def test_fx_quote_command_hits_currency_pair_quote_surface(monkeypatch, capsys):
+    _run(monkeypatch, capsys, ["fx", "quote", "--symbol", "EURUSD"])
+
+    url, _headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/fx/quote"
+    assert params == {"symbol": "EURUSD"}
+
+
+def test_fx_indicators_command_hits_currency_pair_indicators_surface(monkeypatch, capsys):
+    _run(monkeypatch, capsys, ["fx", "indicators", "--symbol", "USDJPY", "--timeframe", "H1", "--bars", "50"])
+
+    url, _headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/fx/indicators"
+    assert params == {"symbol": "USDJPY", "timeframe": "H1", "bars": 50}
+
+
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.3"
+    assert __version__ == "0.1.4"

@@ -4,6 +4,15 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.4
+
+- Added explicit `fx` CLI group for currency-pair data:
+  - `fx quote`
+  - `fx bars`
+  - `fx indicators`
+  - `fx session`
+- Clarified README examples for currency-pair access alongside `context fx`.
+
 ## 0.1.3
 
 - Added authenticated CLI wrappers for new Core API alignment surfaces:
