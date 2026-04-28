@@ -20,6 +20,15 @@ cornerstones-client auth set-base-url --base-url https://www.usecornerstones.com
 cornerstones-client auth set-api-base-url --api-base-url https://api.usecornerstones.com
 ```
 
+## Access matrix
+
+- Trial/no-key: discovery-only (`guide`, `changelog`, `/v1/features`, `/v1/changelog`).
+- Free API key: 500 requests/month, 10 requests/minute, basic authenticated market truth only.
+- Pro API key: adds charts, Layer 5 context, options, macro exact series, and event export.
+- Max API key: adds orderflow raw/summary/context/historical and liquidity metrics.
+
+`verify` always requires a real issued API key. `chart fx` and `chart stocks` are Pro+. All `orderflow ...` commands are Max-only.
+
 ## Command catalog with example outputs
 
 ## Auth / local config

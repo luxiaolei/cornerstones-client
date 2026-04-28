@@ -18,6 +18,10 @@ Requirements:
 - issued Cornerstones API key for authenticated data
 - network access to `https://api.usecornerstones.com`
 
+## Access matrix
+
+Trial/no-key access is discovery-only: `guide` and `changelog` can use a signed discovery token, but `verify` and market-data reads require a real issued API key. Free keys are limited to **500 requests/month** and **10 requests/minute**. Charts require **Pro+**. Orderflow requires **Max**. See `docs/ACCESS_MATRIX.md` for the canonical customer-facing matrix.
+
 ## Login
 
 ```bash
@@ -57,13 +61,13 @@ cornerstones-client alerts subscribe \
 - `context fx`
 - `context gold`
 - `context stocks`
-- `orderflow summary`
-- `orderflow context`
-- `orderflow raw`
-- `orderflow historical`
-- `orderflow liquidity-metrics`
-- `chart fx`
-- `chart stocks`
+- `orderflow summary` (Max)
+- `orderflow context` (Max)
+- `orderflow raw` (Max)
+- `orderflow historical` (Max)
+- `orderflow liquidity-metrics` (Max)
+- `chart fx` (Pro+)
+- `chart stocks` (Pro+)
 - `crypto quote`
 - `crypto ticker`
 - `crypto bars`
