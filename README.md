@@ -12,9 +12,9 @@ It gives traders, operators, and AI agents a safe local CLI for:
 - reading XAUUSD/GC order-flow summaries, raw snapshots, history, and liquidity metrics
 - rendering FX and stock chart artifacts
 - reading live-backed evidence feed items
-- checking alert metrics, recent alerts, and dead-letter status
+- checking alert metrics, recent alerts, dead-letter status, and customer-owned alert subscriptions
 
-The package is intentionally read-focused. It does **not** expose destructive admin, replay, subscription-management, or internal maintenance endpoints.
+The package is intentionally customer-safe. It exposes read surfaces plus customer-owned subscription create/delete flows, but not admin/operator dispatch, replay, test, resolve, collection-job, or internal maintenance endpoints.
 
 ## Install
 
@@ -25,7 +25,7 @@ python -m pip install -U cornerstones-client
 Pin the current documented release:
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.7
+python -m pip install -U cornerstones-client==0.1.8
 ```
 
 Requirements:
@@ -64,7 +64,7 @@ export CORNERSTONES_API_BASE_URL=https://api.usecornerstones.com
 python -m pip install -U cornerstones-client
 
 # 2) Save your issued API key locally
-cornerstones-client auth login --api-key ck_your_issued_key_here
+cornerstones-client auth login --api-key <issued-api-key>
 
 # 3) Verify the key
 cornerstones-client verify
@@ -117,7 +117,7 @@ Example output from a fresh config:
 Save an issued key:
 
 ```bash
-cornerstones-client auth login --api-key ck_your_issued_key_here
+cornerstones-client auth login --api-key <issued-api-key>
 ```
 
 Example output:
@@ -585,9 +585,9 @@ Real example:
 }
 ```
 
-## Alerts status surfaces
+## Alerts and customer subscriptions
 
-The client exposes read-only alert status surfaces for customers and operators.
+The client exposes alert status surfaces plus customer-owned alert subscription create/delete. Admin/operator dispatch, replay, resolve, test, and maintenance flows remain excluded.
 
 ### Metrics
 
@@ -661,6 +661,70 @@ Healthy empty example:
 }
 ```
 
+
+### Create alert subscription
+
+```bash
+export CLIENT_SIGNING_SECRET='replace-with-local-secret'
+
+cornerstones-client alerts subscribe \
+  --asset XAUUSD \
+  --asset EURUSD \
+  --lane macro_event_window \
+  --lane x_pressure \
+  --webhook-url https://client.example.com/cornerstones/alerts \
+  --require-signing \
+  --signing-secret-env CLIENT_SIGNING_SECRET \
+  --name xau-eurusd-alerts
+```
+
+Useful alert lanes:
+
+```text
+scheduled_macro
+macro_event_window
+earnings_upcoming
+earnings_released
+filing_detected
+corporate_action_upcoming
+x_pressure
+news_pressure
+cross_source_pressure
+```
+
+Delete customer-owned subscription:
+
+```bash
+cornerstones-client alerts delete --subscription-id sub_xxx
+```
+
+Subscription responses redact secret-bearing fields before printing.
+
+## Event customer subscriptions
+
+Create event subscription:
+
+```bash
+export CLIENT_SIGNING_SECRET='replace-with-local-secret'
+
+cornerstones-client events subscribe \
+  --symbol XAUUSD \
+  --family scheduled_macro \
+  --min-severity medium \
+  --webhook-url https://client.example.com/cornerstones/events \
+  --require-signing \
+  --signing-secret-env CLIENT_SIGNING_SECRET \
+  --name xau-scheduled-macro-events
+```
+
+Read event views:
+
+```bash
+cornerstones-client events recent --limit 20
+cornerstones-client events history --symbol XAUUSD --limit 50
+cornerstones-client events receipts --limit 50
+```
+
 ## Trial commands
 
 Trial commands are onboarding helpers. They are limited-scope and may not grant access to all authenticated market surfaces.
@@ -671,7 +735,7 @@ cornerstones-client trial status
 cornerstones-client trial token
 ```
 
-`guide` and `changelog` can use a cached trial token when no full API key is configured. `verify`, `fx`, `context`, `orderflow`, `chart`, `evidence`, and `alerts` require a real issued API key.
+`guide` and `changelog` can use a cached trial token when no full API key is configured. `verify`, `fx`, `context`, `orderflow`, `chart`, `evidence`, `alerts`, and `events` require a real issued API key.
 
 ## Command reference
 
@@ -706,6 +770,11 @@ cornerstones-client trial token
 | `alerts metrics` | API key | Fetch alert system metrics |
 | `alerts recent --limit 5` | API key | Fetch recent alerts |
 | `alerts dead-letter --limit 5` | API key | Fetch dead-letter deliveries |
+| `alerts list` / `alerts show --subscription-id ...` | API key | Inspect customer alert subscriptions |
+| `alerts subscribe --asset XAUUSD --lane macro_event_window --webhook-url ...` | API key | Create customer alert subscription |
+| `alerts delete --subscription-id ...` | API key | Delete customer alert subscription |
+| `events subscribe --symbol XAUUSD --webhook-url ...` | API key | Create customer event subscription |
+| `events recent/history/receipts` | API key | Read event bus views |
 
 Run built-in help for exact flags:
 
@@ -727,7 +796,7 @@ cornerstones-client evidence --help
 cornerstones-client alerts --help
 ```
 
-Additional non-admin read groups exposed in `0.1.7`:
+Additional non-admin read groups exposed in `0.1.7`, plus customer subscriptions in `0.1.8`:
 
 ```bash
 cornerstones-client crypto quote --symbol BTCUSDT
@@ -740,10 +809,11 @@ cornerstones-client geopolitics status
 cornerstones-client geopolitics osint-feed --limit 20
 cornerstones-client polymarket overview
 cornerstones-client events recent --limit 20
+cornerstones-client events subscribe --symbol XAUUSD --webhook-url https://client.example.com/events
 cornerstones-client cross-asset
 ```
 
-Mutation/operator surfaces remain excluded from the public client even when they are not under `/admin`: alert subscribe/dispatch/replay/resolve/test, event subscribe/receipt submission/export, evidence subscribe, geopolitics watchlist mutation/refresh, and order-flow collection jobs.
+Admin/operator surfaces remain excluded from the public client even when they are not under `/admin`: alert dispatch/replay/resolve/test, event receipt submission/export, evidence subscribe, geopolitics watchlist mutation/refresh, order-flow collection jobs, and internal maintenance. Customer-owned alert/event subscription creation is intentionally exposed in `0.1.8`.
 
 ## Core API vs client alignment
 
@@ -772,12 +842,18 @@ The managed Cornerstones Core API currently exposes many more endpoints than thi
 | `/v1/alerts/metrics` | `alerts metrics` | Read-only alert metrics |
 | `/v1/alerts/recent` | `alerts recent` | Read-only recent alerts |
 | `/v1/alerts/dead-letter` | `alerts dead-letter` | Read-only dead-letter queue |
+| `/v1/alerts/subscribe` | `alerts subscribe` | Create customer alert subscription |
+| `/v1/alerts/{subscription_id}` | `alerts show` / `alerts delete` | Inspect/delete customer alert subscription |
+| `/v1/events/subscribe` | `events subscribe` | Create customer event subscription |
+| `/v1/events/recent` | `events recent` | Read recent events |
+| `/v1/events/history` | `events history` | Read event history |
+| `/v1/events/receipts` | `events receipts` | Read delivery receipts |
 
 Not exposed by the client on purpose:
 
 - admin and operator endpoints
 - order-flow collection jobs / maintenance mutations
-- subscription creation/deletion
+- admin/operator subscription mutation outside customer-owned alert/event subscribe/delete
 - alert dispatch/replay/resolve/test mutation flows
 - internal maintenance endpoints
 - artifact binary download helpers beyond returned chart URLs

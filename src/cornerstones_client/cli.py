@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from typing import Any
 
@@ -10,8 +11,24 @@ import httpx
 from .config import DEFAULT_API_BASE_URL, DEFAULT_PORTAL_BASE_URL, load_config, save_config
 
 
-def _print(payload: dict[str, Any]) -> None:
-    print(json.dumps(payload, indent=2, ensure_ascii=False))
+def _redact_secrets(value: Any) -> Any:
+    if isinstance(value, dict):
+        redacted: dict[str, Any] = {}
+        for key, item in value.items():
+            lowered = str(key).lower()
+            if any(marker in lowered for marker in ["secret", "token", "password", "authorization", "api_key"]):
+                redacted[key] = "[REDACTED]" if item is not None else None
+            else:
+                redacted[key] = _redact_secrets(item)
+        return redacted
+    if isinstance(value, list):
+        return [_redact_secrets(item) for item in value]
+    return value
+
+
+def _print(payload: dict[str, Any], *, redact: bool = False) -> None:
+    safe_payload = _redact_secrets(payload) if redact else payload
+    print(json.dumps(safe_payload, indent=2, ensure_ascii=False))
 
 
 def _fail(error: str, message: str, *, status_code: int | None = None) -> None:
@@ -153,14 +170,7 @@ def _run_discovery_route(route: str) -> None:
     _print(response.json())
 
 
-def _authenticated_get(route: str, *, params: dict[str, Any] | None = None, error: str = "request_failed") -> dict[str, Any]:
-    config = load_config()
-    with httpx.Client(timeout=30.0) as client:
-        response = client.get(
-            f"{_api_base_url(config)}{route}",
-            headers=build_headers(config, require_api_key=True),
-            params=params,
-        )
+def _parse_response(response: httpx.Response, *, error: str) -> dict[str, Any]:
     if response.status_code >= 400:
         try:
             payload = response.json()
@@ -174,6 +184,38 @@ def _authenticated_get(route: str, *, params: dict[str, Any] | None = None, erro
     if isinstance(payload, dict):
         return payload
     return {"data": payload}
+
+
+def _authenticated_get(route: str, *, params: dict[str, Any] | list[tuple[str, Any]] | None = None, error: str = "request_failed") -> dict[str, Any]:
+    config = load_config()
+    with httpx.Client(timeout=30.0) as client:
+        response = client.get(
+            f"{_api_base_url(config)}{route}",
+            headers=build_headers(config, require_api_key=True),
+            params=params,
+        )
+    return _parse_response(response, error=error)
+
+
+def _authenticated_post(route: str, *, body: dict[str, Any], error: str = "request_failed") -> dict[str, Any]:
+    config = load_config()
+    with httpx.Client(timeout=30.0) as client:
+        response = client.post(
+            f"{_api_base_url(config)}{route}",
+            headers=build_headers(config, require_api_key=True),
+            json=body,
+        )
+    return _parse_response(response, error=error)
+
+
+def _authenticated_delete(route: str, *, error: str = "request_failed") -> dict[str, Any]:
+    config = load_config()
+    with httpx.Client(timeout=30.0) as client:
+        response = client.delete(
+            f"{_api_base_url(config)}{route}",
+            headers=build_headers(config, require_api_key=True),
+        )
+    return _parse_response(response, error=error)
 
 
 def _compact_params(raw: dict[str, Any]) -> dict[str, Any]:
@@ -196,7 +238,74 @@ def cmd_evidence(args: argparse.Namespace) -> None:
         return
 
 
+def _parse_kv_pairs(values: list[str] | None, *, name: str) -> dict[str, str]:
+    pairs: dict[str, str] = {}
+    for raw in values or []:
+        if "=" not in raw:
+            _fail("invalid_argument", f"{name} must use KEY=VALUE format: {raw}")
+        key, value = raw.split("=", 1)
+        if not key:
+            _fail("invalid_argument", f"{name} key cannot be empty")
+        pairs[key] = value
+    return pairs
+
+
+def _delivery_from_args(args: argparse.Namespace) -> dict[str, Any]:
+    signing_secret = getattr(args, "signing_secret", None)
+    signing_secret_env = getattr(args, "signing_secret_env", None)
+    if signing_secret_env:
+        signing_secret = os.environ.get(signing_secret_env)
+        if not signing_secret:
+            _fail("missing_signing_secret", f"Environment variable {signing_secret_env} is not set.")
+    delivery = _compact_params({
+        "mode": getattr(args, "delivery_mode", "webhook"),
+        "url": getattr(args, "webhook_url", None),
+        "bridge_url": getattr(args, "bridge_url", None),
+        "target": json.loads(args.target_json) if getattr(args, "target_json", None) else None,
+        "headers": _parse_kv_pairs(getattr(args, "header", None), name="--header"),
+        "signing_secret": signing_secret,
+        "require_signing": getattr(args, "require_signing", False),
+        "timeout_seconds": getattr(args, "timeout_seconds", None),
+        "max_attempts": getattr(args, "max_attempts", None),
+        "retry_backoff_seconds": getattr(args, "retry_backoff_seconds", None),
+        "rate_limit_seconds": getattr(args, "rate_limit_seconds", None),
+    })
+    if delivery.get("mode") == "webhook" and not delivery.get("url"):
+        _fail("missing_delivery_target", "--webhook-url is required for webhook delivery.")
+    if delivery.get("mode") == "openclaw_bridge" and not delivery.get("bridge_url") and not delivery.get("target"):
+        _fail("missing_delivery_target", "--bridge-url or --target-json is required for openclaw_bridge delivery.")
+    return delivery
+
+
+def _metadata_from_args(args: argparse.Namespace) -> dict[str, Any]:
+    return _compact_params({
+        "name": getattr(args, "name", None),
+        "created_by": getattr(args, "created_by", None),
+        "notes": getattr(args, "notes", None),
+    })
+
+
 def cmd_alerts(args: argparse.Namespace) -> None:
+    if args.alerts_cmd == "subscribe":
+        body = {
+            "assets": args.asset,
+            "lanes": args.lane,
+            "filters": _compact_params({
+                "min_priority": args.min_priority,
+                "min_confidence": args.min_confidence,
+                "cooldown_minutes": args.cooldown_minutes,
+                "only_confirmed": args.only_confirmed,
+                "max_active_alerts": args.max_active_alerts,
+            }),
+            "delivery": _delivery_from_args(args),
+            "bootstrap": {"mode": args.bootstrap},
+            "metadata": _metadata_from_args(args),
+        }
+        _print(_authenticated_post("/v1/alerts/subscribe", body=body, error="alerts_subscribe_failed"), redact=True)
+        return
+    if args.alerts_cmd == "delete":
+        _print(_authenticated_delete(f"/v1/alerts/{args.subscription_id}", error="alerts_delete_failed"), redact=True)
+        return
     routes = {
         "metrics": "/v1/alerts/metrics",
         "recent": "/v1/alerts/recent",
@@ -359,6 +468,21 @@ def cmd_polymarket(args: argparse.Namespace) -> None:
 
 
 def cmd_events(args: argparse.Namespace) -> None:
+    if args.events_cmd == "subscribe":
+        body = {
+            "filters": _compact_params({
+                "family": args.family,
+                "type": args.type,
+                "symbol": args.symbol,
+                "producer": args.producer,
+                "min_severity": args.min_severity,
+            }),
+            "delivery": _delivery_from_args(args),
+            "bootstrap": {"mode": args.bootstrap},
+            "metadata": _metadata_from_args(args),
+        }
+        _print(_authenticated_post("/v1/events/subscribe", body=body, error="events_subscribe_failed"), redact=True)
+        return
     routes = {"recent": "/v1/events/recent", "history": "/v1/events/history", "receipts": "/v1/events/receipts"}
     params = _compact_params({
         "family": getattr(args, "family", None), "type": getattr(args, "type", None), "symbol": getattr(args, "symbol", None),
@@ -418,7 +542,24 @@ def main() -> None:
     evidence_feed.add_argument("--priority")
     evidence_feed.set_defaults(func=cmd_evidence)
 
-    alerts_parser = sub.add_parser("alerts", help="Read authenticated alert status surfaces")
+    def add_delivery_args(cmd: argparse.ArgumentParser) -> None:
+        cmd.add_argument("--delivery-mode", choices=["webhook", "openclaw_bridge"], default="webhook")
+        cmd.add_argument("--webhook-url")
+        cmd.add_argument("--bridge-url")
+        cmd.add_argument("--target-json", help="JSON object for bridge target metadata")
+        cmd.add_argument("--header", action="append", help="Delivery header as KEY=VALUE; repeatable")
+        cmd.add_argument("--signing-secret", help="Webhook signing secret; prefer --signing-secret-env")
+        cmd.add_argument("--signing-secret-env", help="Read webhook signing secret from environment variable")
+        cmd.add_argument("--require-signing", action="store_true")
+        cmd.add_argument("--timeout-seconds", type=float)
+        cmd.add_argument("--max-attempts", type=int)
+        cmd.add_argument("--retry-backoff-seconds", type=int)
+        cmd.add_argument("--rate-limit-seconds", type=float)
+        cmd.add_argument("--name")
+        cmd.add_argument("--created-by", default="client")
+        cmd.add_argument("--notes")
+
+    alerts_parser = sub.add_parser("alerts", help="Read and manage customer alert subscriptions")
     alerts_sub = alerts_parser.add_subparsers(dest="alerts_cmd", required=True)
     alerts_metrics = alerts_sub.add_parser("metrics", help="Fetch alert metrics")
     alerts_metrics.set_defaults(func=cmd_alerts)
@@ -444,6 +585,23 @@ def main() -> None:
     alerts_show = alerts_sub.add_parser("show", help="Show alert subscription")
     alerts_show.add_argument("--subscription-id", required=True)
     alerts_show.set_defaults(func=cmd_alerts)
+    alerts_subscribe = alerts_sub.add_parser("subscribe", help="Create a customer alert subscription")
+    alerts_subscribe.add_argument("--asset", action="append", required=True, help="Asset/symbol; repeatable")
+    alerts_subscribe.add_argument("--lane", action="append", required=True, choices=[
+        "scheduled_macro", "macro_event_window", "earnings_upcoming", "earnings_released", "filing_detected",
+        "corporate_action_upcoming", "x_pressure", "news_pressure", "cross_source_pressure",
+    ])
+    alerts_subscribe.add_argument("--min-priority", default="medium", choices=["low", "medium", "high", "critical"])
+    alerts_subscribe.add_argument("--min-confidence", type=float, default=0.7)
+    alerts_subscribe.add_argument("--cooldown-minutes", type=int, default=15)
+    alerts_subscribe.add_argument("--only-confirmed", action="store_true")
+    alerts_subscribe.add_argument("--max-active-alerts", type=int, default=20)
+    alerts_subscribe.add_argument("--bootstrap", choices=["none", "snapshot", "evaluate_now"], default="snapshot")
+    add_delivery_args(alerts_subscribe)
+    alerts_subscribe.set_defaults(func=cmd_alerts)
+    alerts_delete = alerts_sub.add_parser("delete", help="Delete a customer alert subscription")
+    alerts_delete.add_argument("--subscription-id", required=True)
+    alerts_delete.set_defaults(func=cmd_alerts)
 
     fx_parser = sub.add_parser("fx", help="Read authenticated FX currency-pair surfaces")
     fx_sub = fx_parser.add_subparsers(dest="fx_cmd", required=True)
@@ -594,6 +752,15 @@ def main() -> None:
         c.add_argument("--limit", type=int, default=20 if name == "recent" else 50)
         c.set_defaults(func=cmd_events)
     c = events_sub.add_parser("receipts"); c.add_argument("--event-id"); c.add_argument("--consumer"); c.add_argument("--status"); c.add_argument("--include-non-production", action="store_true"); c.add_argument("--limit", type=int, default=50); c.set_defaults(func=cmd_events)
+    c = events_sub.add_parser("subscribe", help="Create a customer event subscription")
+    c.add_argument("--symbol", required=True)
+    c.add_argument("--family")
+    c.add_argument("--type")
+    c.add_argument("--producer", default="alerts_current_source")
+    c.add_argument("--min-severity", default="medium", choices=["low", "medium", "high", "critical"])
+    c.add_argument("--bootstrap", choices=["none", "snapshot", "recent"], default="snapshot")
+    add_delivery_args(c)
+    c.set_defaults(func=cmd_events)
 
     cross_asset_parser = sub.add_parser("cross-asset", help="Read authenticated cross-asset context")
     cross_asset_parser.set_defaults(func=cmd_cross_asset)

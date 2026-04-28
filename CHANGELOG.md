@@ -4,6 +4,15 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.8
+
+- Added guarded customer subscription commands:
+  - `alerts subscribe` for `/v1/alerts/subscribe`
+  - `alerts delete` for `/v1/alerts/{subscription_id}` customer-owned deletion
+  - `events subscribe` for `/v1/events/subscribe`
+- Added shared webhook/openclaw-bridge delivery flags, metadata flags, bootstrap flags, and secret redaction for subscription responses.
+- Kept admin/operator flows excluded: alert dispatch/replay/resolve/test, event receipt submission/export, order-flow jobs, and internal maintenance.
+
 ## 0.1.7
 
 - Expanded `cornerstones-client` to cover remaining non-admin read surfaces from Core API:

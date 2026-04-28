@@ -2,12 +2,12 @@
 
 Customer-facing command reference for `cornerstones-client`.
 
-This file mirrors the README command surface in a compact format for operators and AI agents. It intentionally documents the safe read-focused client, not every internal Cornerstones Core API endpoint.
+This file mirrors the README command surface in a compact format for operators and AI agents. It documents customer-safe reads plus customer-owned alert/event subscription flows, not admin/operator internals.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.7
+python -m pip install -U cornerstones-client==0.1.8
 ```
 
 ## Configuration
@@ -146,9 +146,24 @@ Evidence feed is live-backed from the alerts store and returns raw evidence item
 cornerstones-client alerts metrics
 cornerstones-client alerts recent --limit 5
 cornerstones-client alerts dead-letter --limit 5
+cornerstones-client alerts list
+cornerstones-client alerts show --subscription-id sub_xxx
+cornerstones-client alerts subscribe --asset XAUUSD --lane macro_event_window --webhook-url https://client.example.com/alerts --signing-secret-env CLIENT_SIGNING_SECRET --require-signing
+cornerstones-client alerts delete --subscription-id sub_xxx
 ```
 
-These are read-only operator/customer status surfaces.
+`alerts subscribe` and `alerts delete` are customer-owned subscription management. Admin/operator alert dispatch, replay, resolve, and test remain excluded. Prefer `--signing-secret-env` over `--signing-secret` so secrets do not appear in shell history.
+
+## Events
+
+```bash
+cornerstones-client events recent --limit 20
+cornerstones-client events history --symbol XAUUSD --limit 50
+cornerstones-client events receipts --limit 50
+cornerstones-client events subscribe --symbol XAUUSD --family scheduled_macro --min-severity medium --webhook-url https://client.example.com/events --signing-secret-env CLIENT_SIGNING_SECRET --require-signing
+```
+
+`events subscribe` creates a customer-owned event subscription. Event receipt submission/export remain excluded from the public client.
 
 ## Trial onboarding
 
@@ -185,8 +200,14 @@ Trial flows are limited discovery/onboarding helpers. Full market data reads req
 | `/v1/alerts/metrics` | `alerts metrics` |
 | `/v1/alerts/recent` | `alerts recent` |
 | `/v1/alerts/dead-letter` | `alerts dead-letter` |
+| `/v1/alerts/subscribe` | `alerts subscribe` |
+| `/v1/alerts/{subscription_id}` | `alerts show` / `alerts delete` |
+| `/v1/events/subscribe` | `events subscribe` |
+| `/v1/events/recent` | `events recent` |
+| `/v1/events/history` | `events history` |
+| `/v1/events/receipts` | `events receipts` |
 
-Not exposed in the client: admin/operator endpoints, destructive mutation, order-flow collection jobs, dispatch/replay, subscription management, internal maintenance, and direct artifact-download helpers beyond returned chart URLs.
+Not exposed in the client: admin/operator endpoints, destructive mutations, order-flow collection jobs, alert dispatch/replay/resolve/test, event receipt submission/export, internal maintenance, and direct artifact-download helpers beyond returned chart URLs. Customer-owned alert/event subscribe flows are exposed.
 
 ## Output contract
 
