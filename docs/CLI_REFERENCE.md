@@ -1,0 +1,163 @@
+# Cornerstones Client CLI Reference
+
+Customer-facing command reference for `cornerstones-client`.
+
+This file mirrors the README command surface in a compact format for operators and AI agents. It intentionally documents the safe read-focused client, not every internal Cornerstones Core API endpoint.
+
+## Install
+
+```bash
+python -m pip install -U cornerstones-client==0.1.5
+```
+
+## Configuration
+
+Default production endpoints:
+
+- portal: `https://www.usecornerstones.com`
+- API: `https://api.usecornerstones.com`
+
+Local config path:
+
+```text
+~/.config/cornerstones-client/config.json
+```
+
+Commands:
+
+```bash
+cornerstones-client auth status
+cornerstones-client auth login --api-key <issued-api-key>
+cornerstones-client auth logout
+cornerstones-client auth set-base-url --base-url <portal-url>
+cornerstones-client auth set-api-base-url --api-base-url <api-url>
+```
+
+## Discovery
+
+```bash
+cornerstones-client guide
+cornerstones-client changelog
+```
+
+`guide` returns server-owned product discovery and contract rules. `changelog` returns customer-safe release notes.
+
+## Verification
+
+```bash
+cornerstones-client verify
+```
+
+Calls authenticated `/v1/status`.
+
+## FX / currency pairs
+
+Use `fx` for direct pair data.
+
+```bash
+cornerstones-client fx quote --symbol EURUSD
+cornerstones-client fx bars --symbol EURUSD --timeframe 1h --count 50
+cornerstones-client fx indicators --symbol USDJPY --timeframe H1 --bars 200
+cornerstones-client fx session --symbol GBPUSD --timeframe H1 --bars 200
+```
+
+Common symbols tested during documentation refresh:
+
+- `EURUSD`
+- `GBPUSD`
+- `USDJPY`
+- `AUDUSD`
+- `USDCAD`
+- `USDCHF`
+- `NZDUSD`
+- `XAUUSD`
+
+## Context packages
+
+Use `context` for packaged multi-provider context.
+
+```bash
+cornerstones-client context fx --symbol XAUUSD --timeframe 1h --count 3
+cornerstones-client context gold --symbol XAUUSD --timeframe 1h --count 3
+cornerstones-client context stocks --symbol AAPL --timeframe 1d --count 3
+```
+
+Interpretation:
+
+- `context fx` can include quote, bars, sentiment, narrative, event, and optional enrichment blocks.
+- Non-gold FX pair quote/bars can be healthy even if optional sentiment/narrative sources return `source_empty`.
+- `context stocks` treats quote/profile/bars as core components. Supplementary depth/imbalance may be unavailable without degrading the root context.
+
+## Evidence
+
+```bash
+cornerstones-client evidence feed --asset XAUUSD --limit 5
+cornerstones-client evidence feed --asset XAUUSD --type alert --priority critical --limit 10
+```
+
+Evidence feed is live-backed from the alerts store and returns raw evidence items. It does not fabricate sentiment aggregation.
+
+## Alerts
+
+```bash
+cornerstones-client alerts metrics
+cornerstones-client alerts recent --limit 5
+cornerstones-client alerts dead-letter --limit 5
+```
+
+These are read-only operator/customer status surfaces.
+
+## Trial onboarding
+
+```bash
+cornerstones-client trial start
+cornerstones-client trial status
+cornerstones-client trial token
+```
+
+Trial flows are limited discovery/onboarding helpers. Full market data reads require an issued API key.
+
+## Core API alignment matrix
+
+| Core path | Client command |
+|---|---|
+| `/v1/status` | `verify` |
+| `/v1/features` | `guide` |
+| `/v1/changelog` | `changelog` |
+| `/v1/fx/quote` | `fx quote` |
+| `/v1/fx/bars` | `fx bars` |
+| `/v1/fx/indicators` | `fx indicators` |
+| `/v1/fx/session` | `fx session` |
+| `/v1/context/fx` | `context fx` |
+| `/v1/gold/context` | `context gold` |
+| `/v1/stocks/context` | `context stocks` |
+| `/v1/evidence/feed` | `evidence feed` |
+| `/v1/alerts/metrics` | `alerts metrics` |
+| `/v1/alerts/recent` | `alerts recent` |
+| `/v1/alerts/dead-letter` | `alerts dead-letter` |
+
+Not exposed in the client: admin, destructive mutation, dispatch/replay, subscription management, internal maintenance, and chart-image endpoints.
+
+## Output contract
+
+Always inspect these fields when present:
+
+- `provenance`
+- `degraded`
+- `fallback`
+- `not_implemented`
+- `data_quality`
+
+HTTP success and data quality are separate. A response can be HTTP 200 with `degraded: true`; that means the request worked but the data source/path is incomplete or reduced quality.
+
+## Safe support output
+
+When sharing examples publicly, redact:
+
+- API keys
+- key IDs
+- Authorization headers
+- cookies
+- customer/user subjects
+- webhook targets
+- delivery destinations

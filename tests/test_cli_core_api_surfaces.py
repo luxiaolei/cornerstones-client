@@ -102,4 +102,4 @@ def test_fx_indicators_command_hits_currency_pair_indicators_surface(monkeypatch
 
 
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.4"
+    assert __version__ == "0.1.5"

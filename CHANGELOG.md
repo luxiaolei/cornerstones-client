@@ -4,6 +4,12 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.5
+
+- Rewrote customer-facing README with full client command coverage, setup guidance, Core API alignment notes, response-contract semantics, and real redacted output examples.
+- Added `docs/CLI_REFERENCE.md` as a compact customer/operator command reference.
+- Documented FX/currency-pair support and clarified when raw pair data is healthy but optional context enrichment may be empty.
+
 ## 0.1.4
 
 - Added explicit `fx` CLI group for currency-pair data:
