@@ -163,6 +163,7 @@ def test_alerts_subscribe_posts_customer_subscription(monkeypatch, capsys):
         "--signing-secret", "secret-value",
         "--require-signing",
         "--name", "xau-alerts",
+        "--yes",
     ])
 
     method, url, headers, body = _FakeClient.calls[-1]
@@ -179,7 +180,7 @@ def test_alerts_subscribe_posts_customer_subscription(monkeypatch, capsys):
 
 
 def test_alerts_delete_deletes_customer_subscription(monkeypatch, capsys):
-    _run(monkeypatch, capsys, ["alerts", "delete", "--subscription-id", "sub_test"] )
+    _run(monkeypatch, capsys, ["alerts", "delete", "--subscription-id", "sub_test", "--yes"] )
 
     method, url, _headers, body = _FakeClient.calls[-1]
     assert method == "DELETE"
@@ -195,6 +196,7 @@ def test_events_subscribe_posts_customer_subscription(monkeypatch, capsys):
         "--min-severity", "high",
         "--webhook-url", "https://client.example.com/events",
         "--bootstrap", "recent",
+        "--yes",
     ])
 
     method, url, _headers, body = _FakeClient.calls[-1]
@@ -210,5 +212,25 @@ def test_events_subscribe_posts_customer_subscription(monkeypatch, capsys):
     assert body["bootstrap"] == {"mode": "recent"}
 
 
+def test_events_delete_deletes_customer_subscription(monkeypatch, capsys):
+    _run(monkeypatch, capsys, ["events", "delete", "--subscription-id", "evsub_test", "--yes"])
+
+    method, url, _headers, body = _FakeClient.calls[-1]
+    assert method == "DELETE"
+    assert url == "http://api.test/v1/alerts/evsub_test"
+    assert body is None
+
+
+def test_subscription_mutations_require_yes(monkeypatch, capsys):
+    with pytest.raises(SystemExit):
+        _run(monkeypatch, capsys, [
+            "alerts", "subscribe",
+            "--asset", "XAUUSD",
+            "--lane", "x_pressure",
+            "--webhook-url", "https://client.example.com/alerts",
+        ])
+    assert _FakeClient.calls == []
+
+
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.8"
+    assert __version__ == "0.1.9"

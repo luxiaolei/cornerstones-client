@@ -4,6 +4,12 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.9
+
+- Fully refreshed README and CLI reference to cover every exposed customer command with command examples and redacted/shape-preserving JSON output examples.
+- Fixed subscription UX/documentation gap: alert/event subscription mutations now require `--yes`, event subscription delete is available as an alerts-backed customer subscription deletion, and comma-separated alert assets/lanes are normalized.
+- Kept admin/operator/internal/destructive flows explicitly excluded from the public client docs.
+
 ## 0.1.8
 
 - Added guarded customer subscription commands:

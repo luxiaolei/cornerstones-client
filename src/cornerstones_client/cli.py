@@ -222,6 +222,18 @@ def _compact_params(raw: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in raw.items() if value is not None}
 
 
+def _csv_values(values: list[str] | None) -> list[str]:
+    result: list[str] = []
+    for raw in values or []:
+        result.extend(part.strip() for part in raw.split(",") if part.strip())
+    return result
+
+
+def _require_yes(args: argparse.Namespace, action: str) -> None:
+    if not getattr(args, "yes", False):
+        _fail("confirmation_required", f"{action} changes customer subscription state. Re-run with --yes to confirm.")
+
+
 def cmd_verify(_: argparse.Namespace) -> None:
     _print(_authenticated_get("/v1/status", error="verify_failed"))
 
@@ -287,9 +299,10 @@ def _metadata_from_args(args: argparse.Namespace) -> dict[str, Any]:
 
 def cmd_alerts(args: argparse.Namespace) -> None:
     if args.alerts_cmd == "subscribe":
+        _require_yes(args, "alerts subscribe")
         body = {
-            "assets": args.asset,
-            "lanes": args.lane,
+            "assets": _csv_values(args.asset),
+            "lanes": _csv_values(args.lane),
             "filters": _compact_params({
                 "min_priority": args.min_priority,
                 "min_confidence": args.min_confidence,
@@ -304,6 +317,7 @@ def cmd_alerts(args: argparse.Namespace) -> None:
         _print(_authenticated_post("/v1/alerts/subscribe", body=body, error="alerts_subscribe_failed"), redact=True)
         return
     if args.alerts_cmd == "delete":
+        _require_yes(args, "alerts delete")
         _print(_authenticated_delete(f"/v1/alerts/{args.subscription_id}", error="alerts_delete_failed"), redact=True)
         return
     routes = {
@@ -469,6 +483,7 @@ def cmd_polymarket(args: argparse.Namespace) -> None:
 
 def cmd_events(args: argparse.Namespace) -> None:
     if args.events_cmd == "subscribe":
+        _require_yes(args, "events subscribe")
         body = {
             "filters": _compact_params({
                 "family": args.family,
@@ -482,6 +497,10 @@ def cmd_events(args: argparse.Namespace) -> None:
             "metadata": _metadata_from_args(args),
         }
         _print(_authenticated_post("/v1/events/subscribe", body=body, error="events_subscribe_failed"), redact=True)
+        return
+    if args.events_cmd == "delete":
+        _require_yes(args, "events delete")
+        _print(_authenticated_delete(f"/v1/alerts/{args.subscription_id}", error="events_delete_failed"), redact=True)
         return
     routes = {"recent": "/v1/events/recent", "history": "/v1/events/history", "receipts": "/v1/events/receipts"}
     params = _compact_params({
@@ -597,10 +616,12 @@ def main() -> None:
     alerts_subscribe.add_argument("--only-confirmed", action="store_true")
     alerts_subscribe.add_argument("--max-active-alerts", type=int, default=20)
     alerts_subscribe.add_argument("--bootstrap", choices=["none", "snapshot", "evaluate_now"], default="snapshot")
+    alerts_subscribe.add_argument("--yes", action="store_true", help="Confirm customer subscription creation")
     add_delivery_args(alerts_subscribe)
     alerts_subscribe.set_defaults(func=cmd_alerts)
     alerts_delete = alerts_sub.add_parser("delete", help="Delete a customer alert subscription")
     alerts_delete.add_argument("--subscription-id", required=True)
+    alerts_delete.add_argument("--yes", action="store_true", help="Confirm customer subscription deletion")
     alerts_delete.set_defaults(func=cmd_alerts)
 
     fx_parser = sub.add_parser("fx", help="Read authenticated FX currency-pair surfaces")
@@ -759,7 +780,12 @@ def main() -> None:
     c.add_argument("--producer", default="alerts_current_source")
     c.add_argument("--min-severity", default="medium", choices=["low", "medium", "high", "critical"])
     c.add_argument("--bootstrap", choices=["none", "snapshot", "recent"], default="snapshot")
+    c.add_argument("--yes", action="store_true", help="Confirm customer subscription creation")
     add_delivery_args(c)
+    c.set_defaults(func=cmd_events)
+    c = events_sub.add_parser("delete", help="Delete a customer event subscription")
+    c.add_argument("--subscription-id", required=True)
+    c.add_argument("--yes", action="store_true", help="Confirm customer subscription deletion")
     c.set_defaults(func=cmd_events)
 
     cross_asset_parser = sub.add_parser("cross-asset", help="Read authenticated cross-asset context")

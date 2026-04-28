@@ -1,234 +1,1154 @@
 # Cornerstones Client CLI Reference
 
-Customer-facing command reference for `cornerstones-client`.
-
-This file mirrors the README command surface in a compact format for operators and AI agents. It documents customer-safe reads plus customer-owned alert/event subscription flows, not admin/operator internals.
+Machine-readable customer CLI reference for `cornerstones-client==0.1.9`.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.8
+python -m pip install -U cornerstones-client==0.1.9
 ```
 
-## Configuration
+## Auth/config
 
-Default production endpoints:
-
-- portal: `https://www.usecornerstones.com`
-- API: `https://api.usecornerstones.com`
-
-Local config path:
-
-```text
-~/.config/cornerstones-client/config.json
-```
-
-Commands:
+Config file: `~/.config/cornerstones-client/config.json`.
 
 ```bash
 cornerstones-client auth status
 cornerstones-client auth login --api-key <issued-api-key>
 cornerstones-client auth logout
-cornerstones-client auth set-base-url --base-url <portal-url>
-cornerstones-client auth set-api-base-url --api-base-url <api-url>
+cornerstones-client auth set-base-url --base-url https://www.usecornerstones.com
+cornerstones-client auth set-api-base-url --api-base-url https://api.usecornerstones.com
 ```
 
-## Discovery
+## Command catalog with example outputs
+
+## Auth / local config
+
+### `auth status`
+
+Command:
+
+```bash
+cornerstones-client auth status
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"portal_base_url":"https://www.usecornerstones.com","api_base_url":"https://api.usecornerstones.com","logged_in":true,"has_trial_cookie":false,"has_trial_token":false}
+```
+
+### `auth login`
+
+Command:
+
+```bash
+cornerstones-client auth login --api-key <issued-api-key>
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"logged_in":true,"api_base_url":"https://api.usecornerstones.com"}
+```
+
+### `auth logout`
+
+Command:
+
+```bash
+cornerstones-client auth logout
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"logged_out":true}
+```
+
+### `auth set-base-url`
+
+Command:
+
+```bash
+cornerstones-client auth set-base-url --base-url https://www.usecornerstones.com
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"saved":true,"portal_base_url":"https://www.usecornerstones.com"}
+```
+
+### `auth set-api-base-url`
+
+Command:
+
+```bash
+cornerstones-client auth set-api-base-url --api-base-url https://api.usecornerstones.com
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"saved":true,"api_base_url":"https://api.usecornerstones.com"}
+```
+
+## Trial / discovery
+
+### `trial start`
+
+Command:
+
+```bash
+cornerstones-client trial start
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"trial":{"status":"active","remaining_requests":50},"token":{"expires_at":"2026-04-29T00:00:00Z"}}
+```
+
+### `trial status`
+
+Command:
+
+```bash
+cornerstones-client trial status
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"status":"active","remaining_requests":49,"expires_at":"2026-04-29T00:00:00Z"}
+```
+
+### `trial token`
+
+Command:
+
+```bash
+cornerstones-client trial token
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"token":{"token":"[REDACTED]","expires_at":"2026-04-29T00:00:00Z"}}
+```
+
+### `guide`
+
+Command:
 
 ```bash
 cornerstones-client guide
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"product":"cornerstones","surface_count":70,"features":[{"name":"fx","status":"available"}]}
+```
+
+### `changelog`
+
+Command:
+
+```bash
 cornerstones-client changelog
 ```
 
-`guide` returns server-owned product discovery and contract rules. `changelog` returns customer-safe release notes.
+Example output (redacted / shape-preserving):
+
+```json
+{"versions":[{"version":"0.1.9","highlights":["complete customer CLI documentation"]}]}
+```
 
 ## Verification
+
+### `verify`
+
+Command:
 
 ```bash
 cornerstones-client verify
 ```
 
-Calls authenticated `/v1/status`.
+Example output (redacted / shape-preserving):
 
-## FX / currency pairs
+```json
+{"ok":true,"authenticated":true,"plan":"admin","scopes":["read","write","admin"]}
+```
 
-Use `fx` for direct pair data.
+## FX
+
+### `fx quote`
+
+Command:
 
 ```bash
 cornerstones-client fx quote --symbol EURUSD
-cornerstones-client fx bars --symbol EURUSD --timeframe 1h --count 50
-cornerstones-client fx indicators --symbol USDJPY --timeframe H1 --bars 200
-cornerstones-client fx session --symbol GBPUSD --timeframe H1 --bars 200
 ```
 
-Common symbols tested during documentation refresh:
+Example output (redacted / shape-preserving):
 
-- `EURUSD`
-- `GBPUSD`
-- `USDJPY`
-- `AUDUSD`
-- `USDCAD`
-- `USDCHF`
-- `NZDUSD`
-- `XAUUSD`
+```json
+{"symbol":"EURUSD","bid":1.1609,"ask":1.1611,"mid":1.1610,"degraded":false,"provenance":"mt5"}
+```
 
-## Context packages
+### `fx bars`
 
-Use `context` for packaged multi-provider context.
+Command:
 
 ```bash
-cornerstones-client context fx --symbol XAUUSD --timeframe 1h --count 3
-cornerstones-client context gold --symbol XAUUSD --timeframe 1h --count 3
-cornerstones-client context stocks --symbol AAPL --timeframe 1d --count 3
+cornerstones-client fx bars --symbol EURUSD --timeframe 1h --count 3
 ```
 
-Interpretation:
+Example output (redacted / shape-preserving):
 
-- `context fx` can include quote, bars, sentiment, narrative, event, and optional enrichment blocks.
-- Non-gold FX pair quote/bars can be healthy even if optional sentiment/narrative sources return `source_empty`.
-- `context stocks` treats quote/profile/bars as core components. Supplementary depth/imbalance may be unavailable without degrading the root context.
+```json
+{"symbol":"EURUSD","timeframe":"1h","count":3,"bars":[{"time":"2026-04-28T04:00:00Z","open":1.1604,"high":1.1614,"low":1.1600,"close":1.1610}]}
+```
 
-## Order-flow
+### `fx indicators`
 
-Read-only order-flow surfaces are exposed for XAUUSD/GC-style microstructure consumers. Admin collection/job controls remain operator-only.
+Command:
+
+```bash
+cornerstones-client fx indicators --symbol USDJPY --timeframe H1 --bars 50
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"USDJPY","timeframe":"H1","indicators":{"rsi14":54.2,"ema20":156.41},"degraded":false}
+```
+
+### `fx session`
+
+Command:
+
+```bash
+cornerstones-client fx session --symbol XAUUSD --timeframe H1 --bars 80
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","session":"london","range":{"high":2348.2,"low":2339.1},"degraded":false}
+```
+
+## Context
+
+### `context fx`
+
+Command:
+
+```bash
+cornerstones-client context fx --symbol XAUUSD --timeframe 1h --count 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","context":{"quote":{},"macro":{},"correlation_evidence":{}},"degraded":false}
+```
+
+### `context gold`
+
+Command:
+
+```bash
+cornerstones-client context gold --symbol XAUUSD --timeframe 1h --count 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","market":"gold","context":{"futures_proxy":"GC","fx_quote":{}},"degraded":false}
+```
+
+### `context stocks`
+
+Command:
+
+```bash
+cornerstones-client context stocks --symbol AAPL --timeframe 1d --count 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","context":{"quote":{},"profile":{},"options":{}},"degraded":false}
+```
+
+## Orderflow
+
+### `orderflow summary`
+
+Command:
 
 ```bash
 cornerstones-client orderflow summary --symbol XAUUSD
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","summary":{"bias":"neutral","liquidity_score":0.62},"degraded":false}
+```
+
+### `orderflow context`
+
+Command:
+
+```bash
 cornerstones-client orderflow context --symbol XAUUSD
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","context":{"delta":{},"liquidity":{}},"degraded":false}
+```
+
+### `orderflow raw`
+
+Command:
+
+```bash
 cornerstones-client orderflow raw --symbol XAUUSD
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","snapshot":{"bids":[],"asks":[]},"degraded":false}
+```
+
+### `orderflow historical`
+
+Command:
+
+```bash
 cornerstones-client orderflow historical --symbol XAUUSD
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","count":20,"items":[{"asof":"2026-04-28T04:00:00Z","imbalance":0.08}]}
+```
+
+### `orderflow liquidity-metrics`
+
+Command:
+
+```bash
 cornerstones-client orderflow liquidity-metrics --symbol XAUUSD
 ```
 
-## Charts
+Example output (redacted / shape-preserving):
 
-Charts render server-side artifacts and return JSON metadata with artifact URLs.
-
-```bash
-cornerstones-client chart fx --symbol XAUUSD --timeframe H1 --bars 120
-cornerstones-client chart stocks --symbol AAPL --timeframe 1d --bars 120
+```json
+{"symbol":"XAUUSD","liquidity_metrics":{"spread":0.2,"depth_score":0.71},"degraded":false}
 ```
 
-Common flags: `--indicator`, `--template`, `--layout`, `--layer`, `--include`, `--chart-type`, `--width`, `--height`.
+## Chart
 
-## Additional non-admin read groups
+### `chart fx`
 
-Additional non-admin read groups in `0.1.7`:
+Command:
 
 ```bash
-cornerstones-client crypto quote --symbol BTCUSDT
-cornerstones-client crypto bars --symbol BTCUSDT --timeframe 1h --count 100
+cornerstones-client chart fx --symbol XAUUSD --timeframe H1 --bars 120 --indicator rsi
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","image_url":"https://api.usecornerstones.com/artifacts/chart_xxx.png","manifest_url":"https://api.usecornerstones.com/artifacts/chart_xxx.json","degraded":false}
+```
+
+### `chart stocks`
+
+Command:
+
+```bash
+cornerstones-client chart stocks --symbol AAPL --timeframe 1d --bars 80
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","image_url":"https://api.usecornerstones.com/artifacts/chart_xxx.png","degraded":false,"warnings":[]}
+```
+
+## Crypto
+
+### `crypto quote`
+
+Command:
+
+```bash
+cornerstones-client crypto quote --symbol BTCUSD
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"BTCUSD","bid":94480.1,"ask":94491.2,"mid":94485.6,"degraded":false}
+```
+
+### `crypto ticker`
+
+Command:
+
+```bash
+cornerstones-client crypto ticker --symbol BTCUSD
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"BTCUSD","last":94485.6,"volume_24h":12345.0,"degraded":false}
+```
+
+### `crypto bars`
+
+Command:
+
+```bash
+cornerstones-client crypto bars --symbol BTCUSD --timeframe 1h --count 3
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"BTCUSD","timeframe":"1h","count":3,"bars":[{"time":"2026-04-28T04:00:00Z","close":94485.6}]}
+```
+
+### `crypto indicators`
+
+Command:
+
+```bash
+cornerstones-client crypto indicators --symbol BTCUSD --timeframe 1h --bars 50
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"BTCUSD","indicators":{"rsi14":51.8,"ema20":94210.4},"degraded":false}
+```
+
+### `crypto session`
+
+Command:
+
+```bash
+cornerstones-client crypto session --symbol BTCUSD --timeframe 1h --bars 80
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"BTCUSD","session":"global","range":{"high":95120.0,"low":93880.5},"degraded":false}
+```
+
+### `crypto depth`
+
+Command:
+
+```bash
+cornerstones-client crypto depth --symbol BTCUSD --limit 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"BTCUSD","bids":[[94480.0,1.2]],"asks":[[94491.0,0.9]],"degraded":false}
+```
+
+### `crypto trades`
+
+Command:
+
+```bash
+cornerstones-client crypto trades --symbol BTCUSD --limit 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"BTCUSD","trades":[{"price":94485.6,"size":0.12,"side":"buy"}],"degraded":false}
+```
+
+## Stocks
+
+### `stocks quote`
+
+Command:
+
+```bash
 cornerstones-client stocks quote --symbol AAPL
-cornerstones-client stocks screener --limit 25
-cornerstones-client stocks universe --preset us-stocks-liquid --limit 25
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","price":214.7,"currency":"USD","degraded":false,"provenance":"ib"}
+```
+
+### `stocks profile`
+
+Command:
+
+```bash
+cornerstones-client stocks profile --symbol AAPL
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","company_name":"Apple Inc.","exchange":"NASDAQ","sector":"Technology"}
+```
+
+### `stocks optionability`
+
+Command:
+
+```bash
+cornerstones-client stocks optionability --symbol AAPL
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","optionable":true,"degraded":false,"reason":null}
+```
+
+### `stocks context`
+
+Command:
+
+```bash
+cornerstones-client stocks context --symbol AAPL --bars-count 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","context":{"quote":{},"profile":{},"optionability":{}},"degraded":false}
+```
+
+### `stocks indicators`
+
+Command:
+
+```bash
+cornerstones-client stocks indicators --symbol AAPL --timeframe 1d --bars 80
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","timeframe":"1d","indicators":{"rsi14":57.3,"sma20":211.4},"degraded":false}
+```
+
+### `stocks session`
+
+Command:
+
+```bash
+cornerstones-client stocks session --symbol AAPL --timeframe 1d --bars 80
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","session":"regular","range":{"high":216.2,"low":212.5},"degraded":false}
+```
+
+### `stocks depth`
+
+Command:
+
+```bash
+cornerstones-client stocks depth --symbol AAPL --num-rows 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","rows":[{"bid":214.68,"ask":214.72,"bid_size":100,"ask_size":100}],"degraded":false}
+```
+
+### `stocks imbalance`
+
+Command:
+
+```bash
+cornerstones-client stocks imbalance --symbol AAPL --exchange NYSE
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","exchange":"NYSE","imbalance":null,"degraded":false,"available":false}
+```
+
+### `stocks tick`
+
+Command:
+
+```bash
+cornerstones-client stocks tick --symbol AAPL --tick-type Last --num-ticks 10
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","tick_type":"Last","ticks":[{"time":"2026-04-28T13:30:01Z","price":214.7}]}
+```
+
+### `stocks earnings`
+
+Command:
+
+```bash
+cornerstones-client stocks earnings --symbol AAPL --from 2026-04-01 --to 2026-06-30
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","count":1,"events":[{"date":"2026-05-01","status":"confirmed"}],"degraded":false}
+```
+
+### `stocks filings`
+
+Command:
+
+```bash
+cornerstones-client stocks filings --symbol AAPL --form 10-Q --limit 3
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","count":3,"filings":[{"form":"10-Q","filed_at":"2026-04-25","url":"https://www.sec.gov/..."}]}
+```
+
+### `stocks corporate-actions`
+
+Command:
+
+```bash
+cornerstones-client stocks corporate-actions --symbol AAPL --type all
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","actions":[{"type":"dividend","ex_date":"2026-05-10"}],"degraded":false}
+```
+
+### `stocks screener`
+
+Command:
+
+```bash
+cornerstones-client stocks screener --market-cap-more-than 10000000000 --limit 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"count":5,"rows":[{"symbol":"AAPL","marketCap":3000000000000}],"degraded":false}
+```
+
+### `stocks universe`
+
+Command:
+
+```bash
+cornerstones-client stocks universe --preset us-stocks-liquid --limit 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"preset":"us-stocks-liquid","count":5,"symbols":["AAPL","MSFT","NVDA"],"degraded":false}
+```
+
+## Options
+
+### `options chain`
+
+Command:
+
+```bash
 cornerstones-client options chain --symbol AAPL --max-expirations 1
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","count":12,"contracts":[{"right":"C","strike":215.0,"expiration":"2026-05-15"}],"degraded":false}
+```
+
+### `options analysis`
+
+Command:
+
+```bash
+cornerstones-client options analysis --symbol AAPL
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","put_call_ratio":2.506,"max_pain":265.0,"degraded":false}
+```
+
+### `options wall`
+
+Command:
+
+```bash
+cornerstones-client options wall --symbol AAPL
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","walls":[{"type":"call","strike":250.0,"open_interest":1200}],"degraded":false}
+```
+
+## Macro
+
+### `macro summary`
+
+Command:
+
+```bash
 cornerstones-client macro summary
-cornerstones-client macro series --name CPIAUCSL
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"summary":{"risk_calendar":"normal","next_high_importance_event":"FOMC"},"degraded":false}
+```
+
+### `macro yields`
+
+Command:
+
+```bash
+cornerstones-client macro yields
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"curves":{"US10Y":4.62,"US2Y":4.91},"degraded":false}
+```
+
+### `macro series`
+
+Command:
+
+```bash
+cornerstones-client macro series --name dxy
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"name":"dxy","count":100,"observations":[{"time":"2026-04-28","value":105.2}],"degraded":false}
+```
+
+### `macro calendar`
+
+Command:
+
+```bash
+cornerstones-client macro calendar --country US --importance high
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"count":3,"events":[{"time":"2026-04-30T12:30:00Z","country":"US","event":"GDP","importance":"high"}]}
+```
+
+## Geopolitics / OSINT
+
+### `geopolitics context`
+
+Command:
+
+```bash
+cornerstones-client geopolitics context
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"context":{"risk_level":"medium","drivers":[]},"degraded":false}
+```
+
+### `geopolitics status`
+
+Command:
+
+```bash
 cornerstones-client geopolitics status
-cornerstones-client geopolitics osint-feed --limit 20
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"status":"ok","feeds":{"osint":"available","pizza_index":"available"},"degraded":false}
+```
+
+### `geopolitics watchlist`
+
+Command:
+
+```bash
+cornerstones-client geopolitics watchlist
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"watchlist":[{"region":"Middle East","priority":"medium"}],"degraded":false}
+```
+
+### `geopolitics pizza-index`
+
+Command:
+
+```bash
+cornerstones-client geopolitics pizza-index
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"pizza_index":{"status":"normal","signal":"baseline"},"degraded":false}
+```
+
+### `geopolitics evidence`
+
+Command:
+
+```bash
+cornerstones-client geopolitics evidence --min-priority medium
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"count":5,"evidence":[{"priority":"medium","summary":"..."}],"degraded":false}
+```
+
+### `geopolitics osint-feed`
+
+Command:
+
+```bash
+cornerstones-client geopolitics osint-feed --limit 5 --min-priority medium
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"count":5,"items":[{"source":"osint","priority":"medium","headline":"..."}],"degraded":false}
+```
+
+### `geopolitics polymarket`
+
+Command:
+
+```bash
+cornerstones-client geopolitics polymarket --limit 5 --keyword election
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"count":5,"markets":[{"question":"...","probability":0.42}],"degraded":false}
+```
+
+## Polymarket
+
+### `polymarket overview`
+
+Command:
+
+```bash
 cornerstones-client polymarket overview
-cornerstones-client events recent --limit 20
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"overview":{"market_count":120,"top_themes":["macro","election"]},"degraded":false}
+```
+
+### `polymarket context`
+
+Command:
+
+```bash
+cornerstones-client polymarket context
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"context":{"markets":[],"risk_themes":[]},"degraded":false}
+```
+
+## Events
+
+### `events recent`
+
+Command:
+
+```bash
+cornerstones-client events recent --symbol XAUUSD --limit 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"count":5,"events":[{"event_id":"evt_example","event_family":"scheduled_macro","severity":"medium","affected_symbols":["XAUUSD"]}],"degraded":false}
+```
+
+### `events history`
+
+Command:
+
+```bash
+cornerstones-client events history --family scheduled_macro --limit 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"count":5,"events":[{"event_id":"evt_example","event_family":"scheduled_macro"}],"has_more":false}
+```
+
+### `events receipts`
+
+Command:
+
+```bash
+cornerstones-client events receipts --limit 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"count":0,"receipts":[],"degraded":false}
+```
+
+### `events subscribe`
+
+Command:
+
+```bash
+cornerstones-client events subscribe --symbol XAUUSD --family scheduled_macro --webhook-url https://client.example.com/cornerstones/events --signing-secret-env CLIENT_SIGNING_SECRET --yes
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"subscription":{"subscription_id":"sub_example","status":"active","filters":{"symbol":"XAUUSD","family":"scheduled_macro"},"delivery":{"signing_secret":"[REDACTED]"}},"bootstrap":{"mode":"snapshot"}}
+```
+
+### `events delete`
+
+Command:
+
+```bash
+cornerstones-client events delete --subscription-id sub_example --yes
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"deleted":true,"subscription_id":"sub_example","status":"deleted"}
+```
+
+## Cross-asset
+
+### `cross-asset`
+
+Command:
+
+```bash
 cornerstones-client cross-asset
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"context":{"fx":{},"gold":{},"stocks":{},"crypto":{},"macro":{}},"degraded":false}
 ```
 
 ## Evidence
 
+### `evidence feed`
+
+Command:
+
 ```bash
-cornerstones-client evidence feed --asset XAUUSD --limit 5
-cornerstones-client evidence feed --asset XAUUSD --type alert --priority critical --limit 10
+cornerstones-client evidence feed --limit 5 --asset XAUUSD
 ```
 
-Evidence feed is live-backed from the alerts store and returns raw evidence items. It does not fabricate sentiment aggregation.
+Example output (redacted / shape-preserving):
+
+```json
+{"count":5,"items":[{"evidence_id":"ev_example","asset":"XAUUSD","source":"alerts_store","priority":"medium"}],"degraded":false,"not_implemented":false}
+```
 
 ## Alerts
 
+### `alerts metrics`
+
+Command:
+
 ```bash
 cornerstones-client alerts metrics
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"subscriptions":{"active":1,"total":1},"deliveries":{"dead_letter":0,"failed":0},"degraded":false}
+```
+
+### `alerts recent`
+
+Command:
+
+```bash
 cornerstones-client alerts recent --limit 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"count":3,"deliveries":[{"delivery_id":"del_example","status":"delivered","subscription_id":"sub_example"}],"degraded":false}
+```
+
+### `alerts dead-letter`
+
+Command:
+
+```bash
 cornerstones-client alerts dead-letter --limit 5
-cornerstones-client alerts list
-cornerstones-client alerts show --subscription-id sub_xxx
-cornerstones-client alerts subscribe --asset XAUUSD --lane macro_event_window --webhook-url https://client.example.com/alerts --signing-secret-env CLIENT_SIGNING_SECRET --require-signing
-cornerstones-client alerts delete --subscription-id sub_xxx
 ```
 
-`alerts subscribe` and `alerts delete` are customer-owned subscription management. Admin/operator alert dispatch, replay, resolve, and test remain excluded. Prefer `--signing-secret-env` over `--signing-secret` so secrets do not appear in shell history.
+Example output (redacted / shape-preserving):
 
-## Events
+```json
+{"count":0,"items":[],"degraded":false}
+```
+
+### `alerts list`
+
+Command:
 
 ```bash
-cornerstones-client events recent --limit 20
-cornerstones-client events history --symbol XAUUSD --limit 50
-cornerstones-client events receipts --limit 50
-cornerstones-client events subscribe --symbol XAUUSD --family scheduled_macro --min-severity medium --webhook-url https://client.example.com/events --signing-secret-env CLIENT_SIGNING_SECRET --require-signing
+cornerstones-client alerts list --status active
 ```
 
-`events subscribe` creates a customer-owned event subscription. Event receipt submission/export remain excluded from the public client.
+Example output (redacted / shape-preserving):
 
-## Trial onboarding
+```json
+{"count":1,"subscriptions":[{"subscription_id":"sub_example","status":"active","assets":["XAUUSD"]}]}
+```
+
+### `alerts history`
+
+Command:
 
 ```bash
-cornerstones-client trial start
-cornerstones-client trial status
-cornerstones-client trial token
+cornerstones-client alerts history --asset XAUUSD --limit 5
 ```
 
-Trial flows are limited discovery/onboarding helpers. Full market data reads require an issued API key.
+Example output (redacted / shape-preserving):
 
-## Core API alignment matrix
+```json
+{"count":5,"items":[{"subscription_id":"sub_example","lane":"x_pressure","lifecycle":"delivered"}]}
+```
 
-| Core path | Client command |
-|---|---|
-| `/v1/status` | `verify` |
-| `/v1/features` | `guide` |
-| `/v1/changelog` | `changelog` |
-| `/v1/fx/quote` | `fx quote` |
-| `/v1/fx/bars` | `fx bars` |
-| `/v1/fx/indicators` | `fx indicators` |
-| `/v1/fx/session` | `fx session` |
-| `/v1/context/fx` | `context fx` |
-| `/v1/gold/context` | `context gold` |
-| `/v1/stocks/context` | `context stocks` |
-| `/v1/orderflow/summary` | `orderflow summary` |
-| `/v1/orderflow/context` | `orderflow context` |
-| `/v1/orderflow/raw` | `orderflow raw` |
-| `/v1/orderflow/historical` | `orderflow historical` |
-| `/v1/orderflow/liquidity-metrics` | `orderflow liquidity-metrics` |
-| `/v1/fx/chart` | `chart fx` |
-| `/v1/stocks/chart` | `chart stocks` |
-| `/v1/evidence/feed` | `evidence feed` |
-| `/v1/alerts/metrics` | `alerts metrics` |
-| `/v1/alerts/recent` | `alerts recent` |
-| `/v1/alerts/dead-letter` | `alerts dead-letter` |
-| `/v1/alerts/subscribe` | `alerts subscribe` |
-| `/v1/alerts/{subscription_id}` | `alerts show` / `alerts delete` |
-| `/v1/events/subscribe` | `events subscribe` |
-| `/v1/events/recent` | `events recent` |
-| `/v1/events/history` | `events history` |
-| `/v1/events/receipts` | `events receipts` |
+### `alerts security-status`
 
-Not exposed in the client: admin/operator endpoints, destructive mutations, order-flow collection jobs, alert dispatch/replay/resolve/test, event receipt submission/export, internal maintenance, and direct artifact-download helpers beyond returned chart URLs. Customer-owned alert/event subscribe flows are exposed.
+Command:
 
-## Output contract
+```bash
+cornerstones-client alerts security-status --subscription-id sub_example
+```
 
-Always inspect these fields when present:
+Example output (redacted / shape-preserving):
 
-- `provenance`
-- `degraded`
-- `fallback`
-- `not_implemented`
-- `data_quality`
+```json
+{"subscription_id":"sub_example","security":{"require_signing":true,"headers_redacted":true}}
+```
 
-HTTP success and data quality are separate. A response can be HTTP 200 with `degraded: true`; that means the request worked but the data source/path is incomplete or reduced quality.
+### `alerts show`
 
-## Safe support output
+Command:
 
-When sharing examples publicly, redact:
+```bash
+cornerstones-client alerts show --subscription-id sub_example
+```
 
-- API keys
-- key IDs
-- Authorization headers
-- cookies
-- customer/user subjects
-- webhook targets
-- delivery destinations
+Example output (redacted / shape-preserving):
+
+```json
+{"subscription":{"subscription_id":"sub_example","status":"active","delivery":{"signing_secret":"[REDACTED]"}}}
+```
+
+### `alerts subscribe`
+
+Command:
+
+```bash
+cornerstones-client alerts subscribe --asset XAUUSD --lane x_pressure --webhook-url https://client.example.com/cornerstones/alerts --signing-secret-env CLIENT_SIGNING_SECRET --yes
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"subscription":{"subscription_id":"sub_example","status":"active","assets":["XAUUSD"],"lanes":["x_pressure"],"delivery":{"signing_secret":"[REDACTED]"}},"bootstrap":{"mode":"snapshot"}}
+```
+
+### `alerts delete`
+
+Command:
+
+```bash
+cornerstones-client alerts delete --subscription-id sub_example --yes
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"deleted":true,"subscription_id":"sub_example","status":"deleted"}
+```
+
+
+## Safety split
+
+Public client exposes reads and customer-owned subscription create/delete. It excludes admin/operator/internal/destructive APIs, alert dispatch/replay/resolve/test, event receipt submit/export, order-flow jobs, and maintenance routes.
