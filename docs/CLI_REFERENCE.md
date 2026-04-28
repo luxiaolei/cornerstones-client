@@ -7,7 +7,7 @@ This file mirrors the README command surface in a compact format for operators a
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.5
+python -m pip install -U cornerstones-client==0.1.6
 ```
 
 ## Configuration
@@ -88,6 +88,29 @@ Interpretation:
 - Non-gold FX pair quote/bars can be healthy even if optional sentiment/narrative sources return `source_empty`.
 - `context stocks` treats quote/profile/bars as core components. Supplementary depth/imbalance may be unavailable without degrading the root context.
 
+## Order-flow
+
+Read-only order-flow surfaces are exposed for XAUUSD/GC-style microstructure consumers. Admin collection/job controls remain operator-only.
+
+```bash
+cornerstones-client orderflow summary --symbol XAUUSD
+cornerstones-client orderflow context --symbol XAUUSD
+cornerstones-client orderflow raw --symbol XAUUSD
+cornerstones-client orderflow historical --symbol XAUUSD
+cornerstones-client orderflow liquidity-metrics --symbol XAUUSD
+```
+
+## Charts
+
+Charts render server-side artifacts and return JSON metadata with artifact URLs.
+
+```bash
+cornerstones-client chart fx --symbol XAUUSD --timeframe H1 --bars 120
+cornerstones-client chart stocks --symbol AAPL --timeframe 1d --bars 120
+```
+
+Common flags: `--indicator`, `--template`, `--layout`, `--layer`, `--include`, `--chart-type`, `--width`, `--height`.
+
 ## Evidence
 
 ```bash
@@ -131,12 +154,19 @@ Trial flows are limited discovery/onboarding helpers. Full market data reads req
 | `/v1/context/fx` | `context fx` |
 | `/v1/gold/context` | `context gold` |
 | `/v1/stocks/context` | `context stocks` |
+| `/v1/orderflow/summary` | `orderflow summary` |
+| `/v1/orderflow/context` | `orderflow context` |
+| `/v1/orderflow/raw` | `orderflow raw` |
+| `/v1/orderflow/historical` | `orderflow historical` |
+| `/v1/orderflow/liquidity-metrics` | `orderflow liquidity-metrics` |
+| `/v1/fx/chart` | `chart fx` |
+| `/v1/stocks/chart` | `chart stocks` |
 | `/v1/evidence/feed` | `evidence feed` |
 | `/v1/alerts/metrics` | `alerts metrics` |
 | `/v1/alerts/recent` | `alerts recent` |
 | `/v1/alerts/dead-letter` | `alerts dead-letter` |
 
-Not exposed in the client: admin, destructive mutation, dispatch/replay, subscription management, internal maintenance, and chart-image endpoints.
+Not exposed in the client: admin/operator endpoints, destructive mutation, order-flow collection jobs, dispatch/replay, subscription management, internal maintenance, and direct artifact-download helpers beyond returned chart URLs.
 
 ## Output contract
 

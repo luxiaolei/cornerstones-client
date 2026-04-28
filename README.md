@@ -9,6 +9,8 @@ It gives traders, operators, and AI agents a safe local CLI for:
 - discovering available managed product surfaces
 - reading FX/currency-pair quotes, bars, indicators, and session state
 - reading market context packages for FX, gold, and stocks
+- reading XAUUSD/GC order-flow summaries, raw snapshots, history, and liquidity metrics
+- rendering FX and stock chart artifacts
 - reading live-backed evidence feed items
 - checking alert metrics, recent alerts, and dead-letter status
 
@@ -23,7 +25,7 @@ python -m pip install -U cornerstones-client
 Pin the current documented release:
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.5
+python -m pip install -U cornerstones-client==0.1.6
 ```
 
 Requirements:
@@ -71,6 +73,8 @@ cornerstones-client verify
 cornerstones-client fx quote --symbol EURUSD
 cornerstones-client fx indicators --symbol USDJPY --timeframe H1 --bars 200
 cornerstones-client context fx --symbol XAUUSD --timeframe 1h --count 3
+cornerstones-client orderflow summary --symbol XAUUSD
+cornerstones-client chart fx --symbol XAUUSD --timeframe H1 --bars 120
 cornerstones-client evidence feed --asset XAUUSD --limit 5
 ```
 
@@ -442,6 +446,100 @@ Real example excerpt:
 
 `orderflow` and `imbalance` can be listed as unavailable supplementary components without making the stock context degraded. Core quote/profile/bars are the main customer-facing stock context contract.
 
+## Order-flow surfaces
+
+Order-flow is exposed as read-only data for XAUUSD/GC-style microstructure consumers. Admin collection/job endpoints remain server/operator-only.
+
+```bash
+cornerstones-client orderflow summary --symbol XAUUSD
+cornerstones-client orderflow context --symbol XAUUSD
+cornerstones-client orderflow raw --symbol XAUUSD
+cornerstones-client orderflow historical --symbol XAUUSD
+cornerstones-client orderflow liquidity-metrics --symbol XAUUSD
+```
+
+Real `summary` example excerpt:
+
+```json
+{
+  "data": {
+    "symbol": "XAUUSD",
+    "futures_symbol": "GC",
+    "exchange": "COMEX",
+    "mode": "live",
+    "summary": {
+      "book_pressure_direction": "buy",
+      "book_pressure_strength": "strong",
+      "trade_aggression_bias": "buyer_aggressive",
+      "microstructure_state": "trend_supportive",
+      "session_liquidity_regime": "thin",
+      "delta_persistence": "persistent_buying",
+      "imbalance_persistence": "persistent_bid"
+    },
+    "readiness": {
+      "support_only": false,
+      "confirmation_only": true,
+      "directional_candidate_ok": false,
+      "production_ready": false
+    },
+    "provenance": "cornerstones+rithmic",
+    "degraded": false
+  }
+}
+```
+
+Real `liquidity-metrics` example excerpt:
+
+```json
+{
+  "data": {
+    "symbol": "XAUUSD",
+    "futures_symbol": "GC",
+    "metrics": {
+      "breakout_acceptance_score": 0.85,
+      "sweep_confirmation": "not_applicable",
+      "reclaim_quality": "clean",
+      "post_break_acceptance": "accepted",
+      "trap_probability_bucket": "unclear"
+    },
+    "provenance": "cornerstones+rithmic",
+    "degraded": false
+  }
+}
+```
+
+## Chart rendering
+
+Charts render server-side artifacts and return JSON metadata plus artifact URLs. Use the returned `image_url`, `html_url`, or `manifest_url` with the same authenticated API host.
+
+```bash
+cornerstones-client chart fx --symbol XAUUSD --timeframe H1 --bars 80 --width 900 --height 600
+cornerstones-client chart stocks --symbol AAPL --timeframe 1d --bars 80 --width 900 --height 600
+```
+
+Real FX chart example excerpt:
+
+```json
+{
+  "symbol": "XAUUSD",
+  "timeframe": "H1",
+  "bars_count": 80,
+  "engine": "tradingview_widget_local",
+  "image_url": "/v1/charting/artifacts/fx_XAUUSD_H1_80_1777352081678.png",
+  "html_url": "/v1/charting/artifacts/fx_XAUUSD_H1_80_1777352081678.html",
+  "manifest_url": "/v1/charting/artifacts/fx_XAUUSD_H1_80_1777352081678.manifest.json",
+  "image_width": 900,
+  "image_height": 600,
+  "indicators": ["ema20", "ema50", "rsi", "macd"],
+  "provenance": "cornerstones_chart_local",
+  "degraded": false,
+  "fallback": null,
+  "message": "Local TradingView widget chart rendered"
+}
+```
+
+Stock charts can return `degraded: true` when a companion component is unavailable while the artifact still renders. Treat chart metadata like other Cornerstones payloads: inspect `degraded` and `fallback`.
+
 ## Evidence feed
 
 Evidence feed returns live-backed raw evidence assembled from alert-store items. It is not a fabricated sentiment aggregate.
@@ -573,7 +671,7 @@ cornerstones-client trial status
 cornerstones-client trial token
 ```
 
-`guide` and `changelog` can use a cached trial token when no full API key is configured. `verify`, `fx`, `context`, `evidence`, and `alerts` require a real issued API key.
+`guide` and `changelog` can use a cached trial token when no full API key is configured. `verify`, `fx`, `context`, `orderflow`, `chart`, `evidence`, and `alerts` require a real issued API key.
 
 ## Command reference
 
@@ -597,6 +695,13 @@ cornerstones-client trial token
 | `context fx --symbol XAUUSD --timeframe 1h --count 3` | API key | Fetch packaged FX context |
 | `context gold --symbol XAUUSD --timeframe 1h --count 3` | API key | Fetch packaged gold context |
 | `context stocks --symbol AAPL --timeframe 1d --count 3` | API key | Fetch packaged stock context |
+| `orderflow summary --symbol XAUUSD` | API key | Fetch order-flow summary |
+| `orderflow context --symbol XAUUSD` | API key | Fetch order-flow context |
+| `orderflow raw --symbol XAUUSD` | API key | Fetch raw/latest order-flow payload |
+| `orderflow historical --symbol XAUUSD` | API key | Fetch historical order-flow payload |
+| `orderflow liquidity-metrics --symbol XAUUSD` | API key | Fetch liquidity metrics |
+| `chart fx --symbol XAUUSD --timeframe H1 --bars 120` | API key | Render FX chart artifact |
+| `chart stocks --symbol AAPL --timeframe 1d --bars 120` | API key | Render stock chart artifact |
 | `evidence feed --asset XAUUSD --limit 5` | API key | Fetch live-backed evidence items |
 | `alerts metrics` | API key | Fetch alert system metrics |
 | `alerts recent --limit 5` | API key | Fetch recent alerts |
@@ -608,6 +713,8 @@ Run built-in help for exact flags:
 cornerstones-client --help
 cornerstones-client fx --help
 cornerstones-client context --help
+cornerstones-client orderflow --help
+cornerstones-client chart --help
 cornerstones-client evidence --help
 cornerstones-client alerts --help
 ```
@@ -628,6 +735,13 @@ The managed Cornerstones Core API currently exposes many more endpoints than thi
 | `/v1/context/fx` | `context fx` | Packaged FX context |
 | `/v1/gold/context` | `context gold` | Packaged gold context |
 | `/v1/stocks/context` | `context stocks` | Packaged stock context |
+| `/v1/orderflow/summary` | `orderflow summary` | Read-only order-flow summary |
+| `/v1/orderflow/context` | `orderflow context` | Read-only order-flow context |
+| `/v1/orderflow/raw` | `orderflow raw` | Raw/latest order-flow payload |
+| `/v1/orderflow/historical` | `orderflow historical` | Historical order-flow payload |
+| `/v1/orderflow/liquidity-metrics` | `orderflow liquidity-metrics` | Liquidity metrics |
+| `/v1/fx/chart` | `chart fx` | FX chart artifact metadata |
+| `/v1/stocks/chart` | `chart stocks` | Stock chart artifact metadata |
 | `/v1/evidence/feed` | `evidence feed` | Live-backed evidence feed |
 | `/v1/alerts/metrics` | `alerts metrics` | Read-only alert metrics |
 | `/v1/alerts/recent` | `alerts recent` | Read-only recent alerts |
@@ -635,11 +749,12 @@ The managed Cornerstones Core API currently exposes many more endpoints than thi
 
 Not exposed by the client on purpose:
 
-- admin endpoints
+- admin and operator endpoints
+- order-flow collection jobs / maintenance mutations
 - subscription creation/deletion
 - alert dispatch/replay/resolve/test mutation flows
 - internal maintenance endpoints
-- chart image generation endpoints
+- artifact binary download helpers beyond returned chart URLs
 - advanced direct domain surfaces that are still best consumed through server-owned discovery docs or a custom integration
 
 For enterprise integrations that need lower-level API access, use the Core API directly with the issued API key and inspect `guide` for contract semantics.

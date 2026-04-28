@@ -237,6 +237,36 @@ def cmd_context(args: argparse.Namespace) -> None:
         return
 
 
+def cmd_orderflow(args: argparse.Namespace) -> None:
+    routes = {
+        "summary": "/v1/orderflow/summary",
+        "context": "/v1/orderflow/context",
+        "raw": "/v1/orderflow/raw",
+        "historical": "/v1/orderflow/historical",
+        "liquidity-metrics": "/v1/orderflow/liquidity-metrics",
+    }
+    params = _compact_params({"symbol": args.symbol})
+    _print(_authenticated_get(routes[args.orderflow_cmd], params=params, error="orderflow_request_failed"))
+
+
+def cmd_chart(args: argparse.Namespace) -> None:
+    route = "/v1/fx/chart" if args.chart_cmd == "fx" else "/v1/stocks/chart"
+    params = _compact_params({
+        "symbol": args.symbol,
+        "timeframe": args.timeframe,
+        "bars": args.bars,
+        "indicators": args.indicator or None,
+        "template": args.template,
+        "layout": args.layout,
+        "layers": args.layer or None,
+        "include": args.include or None,
+        "chart_type": args.chart_type,
+        "width": args.width,
+        "height": args.height,
+    })
+    _print(_authenticated_get(route, params=params, error="chart_request_failed"))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="cornerstones-client", description="Public-safe Cornerstones client")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -330,6 +360,39 @@ def main() -> None:
     context_stocks.add_argument("--timeframe", default="1d")
     context_stocks.add_argument("--count", type=int, default=5)
     context_stocks.set_defaults(func=cmd_context)
+
+    orderflow_parser = sub.add_parser("orderflow", help="Read authenticated order-flow surfaces")
+    orderflow_sub = orderflow_parser.add_subparsers(dest="orderflow_cmd", required=True)
+    for name, help_text in [
+        ("summary", "Fetch order-flow summary"),
+        ("context", "Fetch order-flow context"),
+        ("raw", "Fetch raw/latest order-flow payload"),
+        ("historical", "Fetch historical order-flow payload"),
+        ("liquidity-metrics", "Fetch order-flow liquidity metrics"),
+    ]:
+        orderflow_cmd = orderflow_sub.add_parser(name, help=help_text)
+        orderflow_cmd.add_argument("--symbol", help="Instrument symbol, e.g. XAUUSD")
+        orderflow_cmd.set_defaults(func=cmd_orderflow)
+
+    chart_parser = sub.add_parser("chart", help="Render authenticated chart surfaces")
+    chart_sub = chart_parser.add_subparsers(dest="chart_cmd", required=True)
+    for name, default_symbol, default_timeframe, help_text in [
+        ("fx", "XAUUSD", "H1", "Render an FX/currency-pair chart"),
+        ("stocks", "AAPL", "1d", "Render a stock chart"),
+    ]:
+        chart_cmd = chart_sub.add_parser(name, help=help_text)
+        chart_cmd.add_argument("--symbol", default=default_symbol)
+        chart_cmd.add_argument("--timeframe", default=default_timeframe)
+        chart_cmd.add_argument("--bars", type=int, default=200)
+        chart_cmd.add_argument("--indicator", action="append", help="Indicator overlay; repeatable")
+        chart_cmd.add_argument("--template")
+        chart_cmd.add_argument("--layout")
+        chart_cmd.add_argument("--layer", action="append", help="Chart layer; repeatable")
+        chart_cmd.add_argument("--include", action="append", help="Extra chart component; repeatable")
+        chart_cmd.add_argument("--chart-type")
+        chart_cmd.add_argument("--width", type=int, default=1600)
+        chart_cmd.add_argument("--height", type=int, default=1000)
+        chart_cmd.set_defaults(func=cmd_chart)
 
     verify_parser = sub.add_parser("verify", help="Verify a real authenticated API key against /v1/status")
     verify_parser.set_defaults(func=cmd_verify)

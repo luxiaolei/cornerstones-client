@@ -4,6 +4,19 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.6
+
+- Added customer-safe read wrappers for order-flow surfaces:
+  - `orderflow summary`
+  - `orderflow context`
+  - `orderflow raw`
+  - `orderflow historical`
+  - `orderflow liquidity-metrics`
+- Added chart artifact rendering wrappers:
+  - `chart fx`
+  - `chart stocks`
+- Updated README and CLI reference with order-flow/chart commands and real redacted output examples.
+
 ## 0.1.5
 
 - Rewrote customer-facing README with full client command coverage, setup guidance, Core API alignment notes, response-contract semantics, and real redacted output examples.

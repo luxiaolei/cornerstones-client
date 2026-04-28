@@ -101,5 +101,47 @@ def test_fx_indicators_command_hits_currency_pair_indicators_surface(monkeypatch
     assert params == {"symbol": "USDJPY", "timeframe": "H1", "bars": 50}
 
 
+def test_orderflow_summary_command_hits_orderflow_summary_surface(monkeypatch, capsys):
+    _run(monkeypatch, capsys, ["orderflow", "summary", "--symbol", "XAUUSD"])
+
+    url, _headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/orderflow/summary"
+    assert params == {"symbol": "XAUUSD"}
+
+
+def test_orderflow_liquidity_metrics_command_hits_liquidity_surface(monkeypatch, capsys):
+    _run(monkeypatch, capsys, ["orderflow", "liquidity-metrics", "--symbol", "XAUUSD"])
+
+    url, _headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/orderflow/liquidity-metrics"
+    assert params == {"symbol": "XAUUSD"}
+
+
+def test_chart_fx_command_hits_fx_chart_surface(monkeypatch, capsys):
+    _run(monkeypatch, capsys, [
+        "chart", "fx", "--symbol", "XAUUSD", "--timeframe", "H1", "--bars", "120", "--indicator", "rsi", "--layer", "orderflow"
+    ])
+
+    url, _headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/fx/chart"
+    assert params == {
+        "symbol": "XAUUSD",
+        "timeframe": "H1",
+        "bars": 120,
+        "indicators": ["rsi"],
+        "layers": ["orderflow"],
+        "width": 1600,
+        "height": 1000,
+    }
+
+
+def test_chart_stocks_command_hits_stocks_chart_surface(monkeypatch, capsys):
+    _run(monkeypatch, capsys, ["chart", "stocks", "--symbol", "AAPL", "--timeframe", "1d", "--bars", "80"])
+
+    url, _headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/stocks/chart"
+    assert params == {"symbol": "AAPL", "timeframe": "1d", "bars": 80, "width": 1600, "height": 1000}
+
+
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.5"
+    assert __version__ == "0.1.6"
