@@ -167,7 +167,10 @@ def _authenticated_get(route: str, *, params: dict[str, Any] | None = None, erro
         except Exception:
             payload = {}
         _fail(payload.get("error", error), payload.get("message", response.text), status_code=response.status_code)
-    payload = response.json()
+    try:
+        payload = response.json()
+    except Exception:
+        return {"content_type": response.headers.get("content-type"), "text": response.text}
     if isinstance(payload, dict):
         return payload
     return {"data": payload}
@@ -198,8 +201,27 @@ def cmd_alerts(args: argparse.Namespace) -> None:
         "metrics": "/v1/alerts/metrics",
         "recent": "/v1/alerts/recent",
         "dead-letter": "/v1/alerts/dead-letter",
+        "list": "/v1/alerts",
+        "history": "/v1/alerts/history",
+        "security-status": "/v1/alerts/security-status",
+        "show": f"/v1/alerts/{getattr(args, 'subscription_id', '')}",
     }
-    params = _compact_params({"limit": getattr(args, "limit", None)})
+    params = _compact_params({
+        "limit": getattr(args, "limit", None),
+        "status": getattr(args, "status", None),
+        "asset": getattr(args, "asset", None),
+        "delivery_mode": getattr(args, "delivery_mode", None),
+        "lane": getattr(args, "lane", None),
+        "kind": getattr(args, "kind", None),
+        "min_priority": getattr(args, "min_priority", None),
+        "lifecycle": getattr(args, "lifecycle", None),
+        "delivery_status": getattr(args, "delivery_status", None),
+        "cursor": getattr(args, "cursor", None),
+        "since_minutes": getattr(args, "since_minutes", None),
+        "only_active": getattr(args, "only_active", None),
+        "include_state": getattr(args, "include_state", None),
+        "subscription_id": getattr(args, "subscription_id", None) if args.alerts_cmd == "security-status" else None,
+    })
     _print(_authenticated_get(routes[args.alerts_cmd], params=params, error="alerts_request_failed"))
 
 
@@ -267,6 +289,91 @@ def cmd_chart(args: argparse.Namespace) -> None:
     _print(_authenticated_get(route, params=params, error="chart_request_failed"))
 
 
+def cmd_crypto(args: argparse.Namespace) -> None:
+    routes = {name: f"/v1/crypto/{name}" for name in ["quote", "ticker", "bars", "indicators", "session", "depth", "trades"]}
+    params = _compact_params({
+        "symbol": args.symbol,
+        "timeframe": getattr(args, "timeframe", None),
+        "count": getattr(args, "count", None),
+        "bars": getattr(args, "bars", None),
+        "limit": getattr(args, "limit", None),
+    })
+    _print(_authenticated_get(routes[args.crypto_cmd], params=params, error="crypto_request_failed"))
+
+
+def cmd_stocks(args: argparse.Namespace) -> None:
+    routes = {
+        "quote": "/v1/stocks/quote", "profile": "/v1/stocks/profile", "context": "/v1/stocks/context",
+        "indicators": "/v1/stocks/indicators", "session": "/v1/stocks/session", "depth": "/v1/stocks/depth",
+        "imbalance": "/v1/stocks/imbalance", "tick": "/v1/stocks/tick", "optionability": "/v1/stocks/optionability",
+        "earnings": "/v1/stocks/earnings", "filings": "/v1/stocks/filings", "corporate-actions": "/v1/stocks/corporate-actions",
+        "screener": "/v1/stocks/screener", "universe": "/v1/stocks/universe",
+    }
+    params = _compact_params({
+        "symbol": getattr(args, "symbol", None), "timeframe": getattr(args, "timeframe", None), "bars": getattr(args, "bars", None),
+        "bars_count": getattr(args, "bars_count", None), "num_rows": getattr(args, "num_rows", None), "exchange": getattr(args, "exchange", None),
+        "tick_type": getattr(args, "tick_type", None), "num_ticks": getattr(args, "num_ticks", None), "from": getattr(args, "from_date", None),
+        "to": getattr(args, "to_date", None), "status": getattr(args, "status", None), "form": getattr(args, "form", None),
+        "type": getattr(args, "type", None), "limit": getattr(args, "limit", None), "preset": getattr(args, "preset", None),
+        "marketCapMoreThan": getattr(args, "market_cap_more_than", None), "volumeMoreThan": getattr(args, "volume_more_than", None),
+        "sector": getattr(args, "sector", None), "isEtf": getattr(args, "is_etf", None), "isFund": getattr(args, "is_fund", None),
+        "isActivelyTrading": getattr(args, "is_actively_trading", None),
+    })
+    _print(_authenticated_get(routes[args.stocks_cmd], params=params, error="stocks_request_failed"))
+
+
+def cmd_options(args: argparse.Namespace) -> None:
+    routes = {"chain": "/v1/options/chain", "analysis": "/v1/options/analysis", "wall": "/v1/options/wall"}
+    params = _compact_params({
+        "symbol": args.symbol, "expiration_date": getattr(args, "expiration_date", None), "option_type": getattr(args, "option_type", None),
+        "moneyness": getattr(args, "moneyness", None), "depth": getattr(args, "depth", None), "max_expirations": getattr(args, "max_expirations", None),
+        "include": getattr(args, "include", None), "sort": getattr(args, "sort", None), "preset": getattr(args, "preset", None),
+        "threshold_percentile": getattr(args, "threshold_percentile", None),
+    })
+    _print(_authenticated_get(routes[args.options_cmd], params=params, error="options_request_failed"))
+
+
+def cmd_macro(args: argparse.Namespace) -> None:
+    routes = {"summary": "/v1/macro/summary", "calendar": "/v1/macro/calendar", "series": "/v1/macro/series", "yields": "/v1/macro/yields"}
+    params = _compact_params({
+        "name": getattr(args, "name", None), "from": getattr(args, "from_date", None), "to": getattr(args, "to_date", None),
+        "from_date": getattr(args, "from_date", None), "to_date": getattr(args, "to_date", None), "country": getattr(args, "country", None),
+        "currency": getattr(args, "currency", None), "importance": getattr(args, "importance", None), "category": getattr(args, "category", None),
+    })
+    _print(_authenticated_get(routes[args.macro_cmd], params=params, error="macro_request_failed"))
+
+
+def cmd_geopolitics(args: argparse.Namespace) -> None:
+    routes = {
+        "context": "/v1/geopolitics/context", "status": "/v1/geopolitics/status", "watchlist": "/v1/geopolitics/watchlist",
+        "evidence": "/v1/geopolitics/evidence", "osint-feed": "/v1/geopolitics/osint-feed", "pizza-index": "/v1/geopolitics/pizza-index",
+        "polymarket": "/v1/geopolitics/polymarket",
+    }
+    params = _compact_params({"limit": getattr(args, "limit", None), "min_priority": getattr(args, "min_priority", None), "keyword": getattr(args, "keyword", None)})
+    _print(_authenticated_get(routes[args.geopolitics_cmd], params=params, error="geopolitics_request_failed"))
+
+
+def cmd_polymarket(args: argparse.Namespace) -> None:
+    routes = {"overview": "/v1/polymarket/overview", "context": "/v1/polymarket/context"}
+    _print(_authenticated_get(routes[args.polymarket_cmd], error="polymarket_request_failed"))
+
+
+def cmd_events(args: argparse.Namespace) -> None:
+    routes = {"recent": "/v1/events/recent", "history": "/v1/events/history", "receipts": "/v1/events/receipts"}
+    params = _compact_params({
+        "family": getattr(args, "family", None), "type": getattr(args, "type", None), "symbol": getattr(args, "symbol", None),
+        "severity": getattr(args, "severity", None), "producer": getattr(args, "producer", None), "degraded": getattr(args, "degraded", None),
+        "include_non_production": getattr(args, "include_non_production", None), "cursor": getattr(args, "cursor", None),
+        "limit": getattr(args, "limit", None), "event_id": getattr(args, "event_id", None), "consumer": getattr(args, "consumer", None),
+        "status": getattr(args, "status", None),
+    })
+    _print(_authenticated_get(routes[args.events_cmd], params=params, error="events_request_failed"))
+
+
+def cmd_cross_asset(_: argparse.Namespace) -> None:
+    _print(_authenticated_get("/v1/cross-asset/context", error="cross_asset_request_failed"))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="cornerstones-client", description="Public-safe Cornerstones client")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -321,6 +428,22 @@ def main() -> None:
     alerts_dead = alerts_sub.add_parser("dead-letter", help="Fetch alert dead-letter tail")
     alerts_dead.add_argument("--limit", type=int, default=10)
     alerts_dead.set_defaults(func=cmd_alerts)
+    alerts_list = alerts_sub.add_parser("list", help="List alert subscriptions")
+    alerts_list.add_argument("--status")
+    alerts_list.add_argument("--asset")
+    alerts_list.add_argument("--delivery-mode")
+    alerts_list.set_defaults(func=cmd_alerts)
+    alerts_history = alerts_sub.add_parser("history", help="Fetch alert history")
+    for p in ["asset", "lane", "kind", "min-priority", "lifecycle", "delivery-status", "cursor"]:
+        alerts_history.add_argument(f"--{p}")
+    alerts_history.add_argument("--limit", type=int, default=50)
+    alerts_history.set_defaults(func=cmd_alerts)
+    alerts_security = alerts_sub.add_parser("security-status", help="Fetch alert subscription security status")
+    alerts_security.add_argument("--subscription-id", required=True)
+    alerts_security.set_defaults(func=cmd_alerts)
+    alerts_show = alerts_sub.add_parser("show", help="Show alert subscription")
+    alerts_show.add_argument("--subscription-id", required=True)
+    alerts_show.set_defaults(func=cmd_alerts)
 
     fx_parser = sub.add_parser("fx", help="Read authenticated FX currency-pair surfaces")
     fx_sub = fx_parser.add_subparsers(dest="fx_cmd", required=True)
@@ -393,6 +516,87 @@ def main() -> None:
         chart_cmd.add_argument("--width", type=int, default=1600)
         chart_cmd.add_argument("--height", type=int, default=1000)
         chart_cmd.set_defaults(func=cmd_chart)
+
+    crypto_parser = sub.add_parser("crypto", help="Read authenticated crypto market surfaces")
+    crypto_sub = crypto_parser.add_subparsers(dest="crypto_cmd", required=True)
+    for name in ["quote", "ticker"]:
+        c = crypto_sub.add_parser(name)
+        c.add_argument("--symbol", required=True)
+        c.set_defaults(func=cmd_crypto)
+    for name in ["bars", "indicators", "session"]:
+        c = crypto_sub.add_parser(name)
+        c.add_argument("--symbol", required=True)
+        c.add_argument("--timeframe", default="1h")
+        if name == "bars":
+            c.add_argument("--count", type=int, default=100)
+        else:
+            c.add_argument("--bars", type=int, default=200)
+        c.set_defaults(func=cmd_crypto)
+    for name, default_limit in [("depth", 50), ("trades", 100)]:
+        c = crypto_sub.add_parser(name)
+        c.add_argument("--symbol", required=True)
+        c.add_argument("--limit", type=int, default=default_limit)
+        c.set_defaults(func=cmd_crypto)
+
+    stocks_parser = sub.add_parser("stocks", help="Read authenticated stock market surfaces")
+    stocks_sub = stocks_parser.add_subparsers(dest="stocks_cmd", required=True)
+    for name in ["quote", "profile", "optionability"]:
+        c = stocks_sub.add_parser(name)
+        c.add_argument("--symbol", required=True)
+        c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("context"); c.add_argument("--symbol", required=True); c.add_argument("--bars-count", type=int, default=5); c.set_defaults(func=cmd_stocks)
+    for name in ["indicators", "session"]:
+        c = stocks_sub.add_parser(name); c.add_argument("--symbol", required=True); c.add_argument("--timeframe", default="1d"); c.add_argument("--bars", type=int, default=200 if name == "indicators" else 252); c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("depth"); c.add_argument("--symbol", required=True); c.add_argument("--num-rows", type=int, default=5); c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("imbalance"); c.add_argument("--symbol", required=True); c.add_argument("--exchange", default="NYSE"); c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("tick"); c.add_argument("--symbol", required=True); c.add_argument("--tick-type", default="Last"); c.add_argument("--num-ticks", type=int, default=100); c.set_defaults(func=cmd_stocks)
+    for name in ["earnings", "filings", "corporate-actions"]:
+        c = stocks_sub.add_parser(name); c.add_argument("--symbol", required=True); c.add_argument("--from", dest="from_date"); c.add_argument("--to", dest="to_date")
+        if name == "earnings": c.add_argument("--status")
+        if name == "filings": c.add_argument("--form"); c.add_argument("--limit", type=int, default=20)
+        if name == "corporate-actions": c.add_argument("--type", default="all")
+        c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("screener"); c.add_argument("--market-cap-more-than"); c.add_argument("--volume-more-than"); c.add_argument("--exchange"); c.add_argument("--sector"); c.add_argument("--is-etf"); c.add_argument("--is-fund"); c.add_argument("--is-actively-trading"); c.add_argument("--limit", type=int, default=25); c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("universe"); c.add_argument("--preset", default="us-stocks-liquid"); c.add_argument("--limit", type=int, default=25); c.set_defaults(func=cmd_stocks)
+
+    options_parser = sub.add_parser("options", help="Read authenticated stock options surfaces")
+    options_sub = options_parser.add_subparsers(dest="options_cmd", required=True)
+    c = options_sub.add_parser("chain"); c.add_argument("--symbol", required=True); c.add_argument("--expiration-date"); c.add_argument("--option-type", default="both"); c.add_argument("--moneyness", default="all"); c.add_argument("--depth"); c.add_argument("--max-expirations"); c.add_argument("--include"); c.add_argument("--sort", default="moneyness"); c.add_argument("--preset", default="compact"); c.set_defaults(func=cmd_options)
+    c = options_sub.add_parser("analysis"); c.add_argument("--symbol", required=True); c.add_argument("--expiration-date"); c.set_defaults(func=cmd_options)
+    c = options_sub.add_parser("wall"); c.add_argument("--symbol", required=True); c.add_argument("--expiration-date"); c.add_argument("--threshold-percentile", type=float, default=90.0); c.set_defaults(func=cmd_options)
+
+    macro_parser = sub.add_parser("macro", help="Read authenticated macro surfaces")
+    macro_sub = macro_parser.add_subparsers(dest="macro_cmd", required=True)
+    for name in ["summary", "yields"]:
+        c = macro_sub.add_parser(name); c.set_defaults(func=cmd_macro)
+    c = macro_sub.add_parser("series"); c.add_argument("--name", required=True); c.set_defaults(func=cmd_macro)
+    c = macro_sub.add_parser("calendar"); c.add_argument("--from", dest="from_date"); c.add_argument("--to", dest="to_date"); c.add_argument("--country"); c.add_argument("--currency"); c.add_argument("--importance"); c.add_argument("--category"); c.set_defaults(func=cmd_macro)
+
+    geopolitics_parser = sub.add_parser("geopolitics", help="Read authenticated geopolitics/OSINT surfaces")
+    geopolitics_sub = geopolitics_parser.add_subparsers(dest="geopolitics_cmd", required=True)
+    for name in ["context", "status", "watchlist", "pizza-index"]:
+        c = geopolitics_sub.add_parser(name); c.set_defaults(func=cmd_geopolitics)
+    c = geopolitics_sub.add_parser("evidence"); c.add_argument("--min-priority", default="low"); c.set_defaults(func=cmd_geopolitics)
+    c = geopolitics_sub.add_parser("osint-feed"); c.add_argument("--limit", type=int, default=20); c.add_argument("--min-priority", default="low"); c.set_defaults(func=cmd_geopolitics)
+    c = geopolitics_sub.add_parser("polymarket"); c.add_argument("--limit", type=int, default=10); c.add_argument("--keyword"); c.set_defaults(func=cmd_geopolitics)
+
+    polymarket_parser = sub.add_parser("polymarket", help="Read authenticated Polymarket surfaces")
+    polymarket_sub = polymarket_parser.add_subparsers(dest="polymarket_cmd", required=True)
+    for name in ["overview", "context"]:
+        c = polymarket_sub.add_parser(name); c.set_defaults(func=cmd_polymarket)
+
+    events_parser = sub.add_parser("events", help="Read authenticated event bus surfaces")
+    events_sub = events_parser.add_subparsers(dest="events_cmd", required=True)
+    for name in ["recent", "history"]:
+        c = events_sub.add_parser(name)
+        for p in ["family", "type", "symbol", "severity", "producer", "degraded", "cursor"]: c.add_argument(f"--{p}")
+        c.add_argument("--include-non-production", action="store_true")
+        c.add_argument("--limit", type=int, default=20 if name == "recent" else 50)
+        c.set_defaults(func=cmd_events)
+    c = events_sub.add_parser("receipts"); c.add_argument("--event-id"); c.add_argument("--consumer"); c.add_argument("--status"); c.add_argument("--include-non-production", action="store_true"); c.add_argument("--limit", type=int, default=50); c.set_defaults(func=cmd_events)
+
+    cross_asset_parser = sub.add_parser("cross-asset", help="Read authenticated cross-asset context")
+    cross_asset_parser.set_defaults(func=cmd_cross_asset)
 
     verify_parser = sub.add_parser("verify", help="Verify a real authenticated API key against /v1/status")
     verify_parser.set_defaults(func=cmd_verify)

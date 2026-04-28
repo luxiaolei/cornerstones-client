@@ -4,6 +4,20 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.7
+
+- Expanded `cornerstones-client` to cover remaining non-admin read surfaces from Core API:
+  - `crypto` quote/ticker/bars/indicators/session/depth/trades
+  - `stocks` quote/profile/context/indicators/session/depth/imbalance/tick/optionability/earnings/filings/corporate-actions/screener/universe
+  - `options` chain/analysis/wall
+  - `macro` summary/calendar/series/yields
+  - `geopolitics` context/status/watchlist/evidence/osint-feed/pizza-index/polymarket
+  - `polymarket` overview/context
+  - `events` recent/history/receipts read views
+  - `cross-asset` context
+  - additional `alerts` list/history/show/security-status read views
+- Still excludes admin/operator and mutation surfaces from the public client.
+
 ## 0.1.6
 
 - Added customer-safe read wrappers for order-flow surfaces:

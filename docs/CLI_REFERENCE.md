@@ -7,7 +7,7 @@ This file mirrors the README command surface in a compact format for operators a
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.6
+python -m pip install -U cornerstones-client==0.1.7
 ```
 
 ## Configuration
@@ -110,6 +110,26 @@ cornerstones-client chart stocks --symbol AAPL --timeframe 1d --bars 120
 ```
 
 Common flags: `--indicator`, `--template`, `--layout`, `--layer`, `--include`, `--chart-type`, `--width`, `--height`.
+
+## Additional non-admin read groups
+
+Additional non-admin read groups in `0.1.7`:
+
+```bash
+cornerstones-client crypto quote --symbol BTCUSDT
+cornerstones-client crypto bars --symbol BTCUSDT --timeframe 1h --count 100
+cornerstones-client stocks quote --symbol AAPL
+cornerstones-client stocks screener --limit 25
+cornerstones-client stocks universe --preset us-stocks-liquid --limit 25
+cornerstones-client options chain --symbol AAPL --max-expirations 1
+cornerstones-client macro summary
+cornerstones-client macro series --name CPIAUCSL
+cornerstones-client geopolitics status
+cornerstones-client geopolitics osint-feed --limit 20
+cornerstones-client polymarket overview
+cornerstones-client events recent --limit 20
+cornerstones-client cross-asset
+```
 
 ## Evidence
 

@@ -25,7 +25,7 @@ python -m pip install -U cornerstones-client
 Pin the current documented release:
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.6
+python -m pip install -U cornerstones-client==0.1.7
 ```
 
 Requirements:
@@ -713,11 +713,37 @@ Run built-in help for exact flags:
 cornerstones-client --help
 cornerstones-client fx --help
 cornerstones-client context --help
+cornerstones-client stocks --help
+cornerstones-client options --help
+cornerstones-client crypto --help
+cornerstones-client macro --help
+cornerstones-client geopolitics --help
+cornerstones-client polymarket --help
+cornerstones-client events --help
+cornerstones-client cross-asset --help
 cornerstones-client orderflow --help
 cornerstones-client chart --help
 cornerstones-client evidence --help
 cornerstones-client alerts --help
 ```
+
+Additional non-admin read groups exposed in `0.1.7`:
+
+```bash
+cornerstones-client crypto quote --symbol BTCUSDT
+cornerstones-client stocks quote --symbol AAPL
+cornerstones-client stocks screener --limit 25
+cornerstones-client options chain --symbol AAPL --max-expirations 1
+cornerstones-client macro summary
+cornerstones-client macro calendar --country US --importance high
+cornerstones-client geopolitics status
+cornerstones-client geopolitics osint-feed --limit 20
+cornerstones-client polymarket overview
+cornerstones-client events recent --limit 20
+cornerstones-client cross-asset
+```
+
+Mutation/operator surfaces remain excluded from the public client even when they are not under `/admin`: alert subscribe/dispatch/replay/resolve/test, event subscribe/receipt submission/export, evidence subscribe, geopolitics watchlist mutation/refresh, and order-flow collection jobs.
 
 ## Core API vs client alignment
 

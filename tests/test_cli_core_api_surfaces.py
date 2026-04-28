@@ -144,4 +144,4 @@ def test_chart_stocks_command_hits_stocks_chart_surface(monkeypatch, capsys):
 
 
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.6"
+    assert __version__ == "0.1.7"
