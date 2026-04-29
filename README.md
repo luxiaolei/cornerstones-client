@@ -306,7 +306,7 @@ cornerstones-client fx quote --symbol EURUSD
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"EURUSD","bid":1.1609,"ask":1.1611,"mid":1.1610,"degraded":false,"provenance":"mt5"}
+{"symbol":"EURUSD","bid":1.1609,"ask":1.1611,"mid":1.1610,"degraded":false,"provenance":"runtime"}
 ```
 
 ### `fx bars`
