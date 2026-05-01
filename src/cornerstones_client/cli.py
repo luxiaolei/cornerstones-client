@@ -431,6 +431,7 @@ def cmd_stocks(args: argparse.Namespace) -> None:
         "imbalance": "/v1/stocks/imbalance", "tick": "/v1/stocks/tick", "optionability": "/v1/stocks/optionability",
         "earnings": "/v1/stocks/earnings", "filings": "/v1/stocks/filings", "corporate-actions": "/v1/stocks/corporate-actions",
         "screener": "/v1/stocks/screener", "universe": "/v1/stocks/universe",
+        "normalize-symbol": "/v1/stocks/symbols/normalize", "exchanges": "/v1/stocks/exchanges",
     }
     params = _compact_params({
         "symbol": getattr(args, "symbol", None), "timeframe": getattr(args, "timeframe", None), "bars": getattr(args, "bars", None),
@@ -721,9 +722,14 @@ def main() -> None:
     stocks_sub = stocks_parser.add_subparsers(dest="stocks_cmd", required=True)
     for name in ["quote", "profile", "optionability"]:
         c = stocks_sub.add_parser(name)
-        c.add_argument("--symbol", required=True)
+        c.add_argument("--symbol", required=True, help="Stock symbol, e.g. AAPL, 600519.SS, 000001.SZ")
         c.set_defaults(func=cmd_stocks)
-    c = stocks_sub.add_parser("context"); c.add_argument("--symbol", required=True); c.add_argument("--bars-count", type=int, default=5); c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("normalize-symbol", help="Normalize stock symbol (600519.SH -> 600519.SS; .BJ unsupported in FMP-first phase)")
+    c.add_argument("--symbol", required=True)
+    c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("exchanges", help="List stock exchange support metadata, including A-share SHH/SHZ")
+    c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("context"); c.add_argument("--symbol", required=True, help="Stock symbol, e.g. AAPL, 600519.SS, 000001.SZ"); c.add_argument("--bars-count", type=int, default=5); c.set_defaults(func=cmd_stocks)
     for name in ["indicators", "session"]:
         c = stocks_sub.add_parser(name); c.add_argument("--symbol", required=True); c.add_argument("--timeframe", default="1d"); c.add_argument("--bars", type=int, default=200 if name == "indicators" else 252); c.set_defaults(func=cmd_stocks)
     c = stocks_sub.add_parser("depth"); c.add_argument("--symbol", required=True); c.add_argument("--num-rows", type=int, default=5); c.set_defaults(func=cmd_stocks)
@@ -735,8 +741,8 @@ def main() -> None:
         if name == "filings": c.add_argument("--form"); c.add_argument("--limit", type=int, default=20)
         if name == "corporate-actions": c.add_argument("--type", default="all")
         c.set_defaults(func=cmd_stocks)
-    c = stocks_sub.add_parser("screener"); c.add_argument("--market-cap-more-than"); c.add_argument("--volume-more-than"); c.add_argument("--exchange"); c.add_argument("--sector"); c.add_argument("--is-etf"); c.add_argument("--is-fund"); c.add_argument("--is-actively-trading"); c.add_argument("--limit", type=int, default=25); c.set_defaults(func=cmd_stocks)
-    c = stocks_sub.add_parser("universe"); c.add_argument("--preset", default="us-stocks-liquid"); c.add_argument("--limit", type=int, default=25); c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("screener"); c.add_argument("--market-cap-more-than"); c.add_argument("--volume-more-than"); c.add_argument("--exchange", help="Exchange filter, e.g. NASDAQ, NYSE, SHH, SHZ"); c.add_argument("--sector"); c.add_argument("--is-etf"); c.add_argument("--is-fund"); c.add_argument("--is-actively-trading"); c.add_argument("--limit", type=int, default=25); c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("universe"); c.add_argument("--preset", default="us-stocks-liquid", help="Universe preset, e.g. us-stocks-liquid or china-a-shares-largecap"); c.add_argument("--limit", type=int, default=25); c.set_defaults(func=cmd_stocks)
 
     options_parser = sub.add_parser("options", help="Read authenticated stock options surfaces")
     options_sub = options_parser.add_subparsers(dest="options_cmd", required=True)

@@ -497,12 +497,21 @@ Example output (redacted / shape-preserving):
 
 ## Stocks
 
+A-share phase 1 uses existing `/v1/stocks/*` endpoints with FMP provider contracts:
+
+- Shanghai A-shares: symbol suffix `.SS`, screener exchange `SHH` (example `600519.SS`).
+- Shenzhen A-shares: symbol suffix `.SZ`, screener exchange `SHZ` (example `000001.SZ`).
+- `.SH` user input can be normalized to `.SS` via `stocks normalize-symbol`.
+- `.BJ` / Beijing Stock Exchange is explicitly unsupported in FMP-first phase; planned for Tushare/AkShare phase.
+
 ### `stocks quote`
 
 Command:
 
 ```bash
 cornerstones-client stocks quote --symbol AAPL
+cornerstones-client stocks quote --symbol 600519.SS
+cornerstones-client stocks quote --symbol 000001.SZ
 ```
 
 Example output (redacted / shape-preserving):
@@ -523,6 +532,35 @@ Example output (redacted / shape-preserving):
 
 ```json
 {"symbol":"AAPL","company_name":"Apple Inc.","exchange":"NASDAQ","sector":"Technology"}
+```
+
+
+### `stocks normalize-symbol`
+
+Command:
+
+```bash
+cornerstones-client stocks normalize-symbol --symbol 600519.SH
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"raw_symbol":"600519.SH","canonical_symbol":"600519.SS","provider_symbol":"600519.SS","market":"china_shanghai","exchange_code":"SHH","supported":true,"normalized":true}
+```
+
+### `stocks exchanges`
+
+Command:
+
+```bash
+cornerstones-client stocks exchanges
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"exchanges":[{"code":"SHH","symbol_suffix":".SS","supported":true},{"code":"SHZ","symbol_suffix":".SZ","supported":true},{"code":"BSE","symbol_suffix":".BJ","supported":false}]}
 ```
 
 ### `stocks optionability`
@@ -671,6 +709,8 @@ Command:
 
 ```bash
 cornerstones-client stocks screener --market-cap-more-than 10000000000 --limit 5
+cornerstones-client stocks screener --exchange SHH --limit 25
+cornerstones-client stocks screener --exchange SHZ --limit 25
 ```
 
 Example output (redacted / shape-preserving):
@@ -685,6 +725,7 @@ Command:
 
 ```bash
 cornerstones-client stocks universe --preset us-stocks-liquid --limit 5
+cornerstones-client stocks universe --preset china-a-shares-largecap --limit 25
 ```
 
 Example output (redacted / shape-preserving):
