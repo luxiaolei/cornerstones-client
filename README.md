@@ -4,12 +4,12 @@
 
 It exposes **customer-safe read surfaces** plus **customer-owned alert/event subscription create/delete flows**. It intentionally does **not** expose admin/operator/internal/destructive flows such as alert dispatch/replay/resolve/test, event receipt submission/export, order-flow collection jobs, or maintenance jobs.
 
-Current documented release: `0.1.9`.
+Current documented release: `0.1.10`.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.9
+python -m pip install -U cornerstones-client==0.1.10
 ```
 
 Requirements:
@@ -89,6 +89,8 @@ cornerstones-client alerts subscribe \
 - `stocks corporate-actions`
 - `stocks screener`
 - `stocks universe`
+- `stocks normalize-symbol`
+- `stocks exchanges`
 - `options chain`
 - `options analysis`
 - `options wall`
@@ -794,6 +796,27 @@ Example output (redacted / shape-preserving):
 ```json
 {"preset":"us-stocks-liquid","count":5,"symbols":["AAPL","MSFT","NVDA"],"degraded":false}
 ```
+
+### China A-share examples
+
+FMP-first A-share support uses provider-native suffixes and exchange codes:
+
+```bash
+cornerstones-client stocks quote --symbol 600519.SS
+cornerstones-client stocks quote --symbol 000001.SZ
+cornerstones-client stocks screener --exchange SHH --limit 25
+cornerstones-client stocks screener --exchange SHZ --limit 25
+cornerstones-client stocks universe --preset china-a-shares-largecap --limit 25
+cornerstones-client stocks normalize-symbol --symbol 600519.SH
+cornerstones-client stocks exchanges
+```
+
+Contracts:
+
+- Shanghai quote/profile/bars symbols use `.SS`; `.SH` is normalized to `.SS` by Core.
+- Shenzhen quote/profile/bars symbols use `.SZ`.
+- Screener exchange codes are `SHH` and `SHZ`.
+- Beijing/BSE `.BJ` is explicit unsupported in the FMP-first phase; use the later Tushare/AkShare provider phase for BJ, metadata, adjusted bars, and China-specific enrichment.
 
 ## Options
 

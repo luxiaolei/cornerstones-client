@@ -4,6 +4,10 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.10
+
+- Added FMP-first China A-share client parity for stocks commands, including Shanghai/Shenzhen examples (`.SS`/`.SZ`), screener exchange codes (`SHH`/`SHZ`), `normalize-symbol`, and `exchanges` helper surfaces.
+
 ## 0.1.9
 
 - Fully refreshed README and CLI reference to cover every exposed customer command with command examples and redacted/shape-preserving JSON output examples.

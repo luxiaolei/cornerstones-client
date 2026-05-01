@@ -1,11 +1,11 @@
 # Cornerstones Client CLI Reference
 
-Machine-readable customer CLI reference for `cornerstones-client==0.1.9`.
+Machine-readable customer CLI reference for `cornerstones-client==0.1.10`.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.9
+python -m pip install -U cornerstones-client==0.1.10
 ```
 
 ## Auth/config
