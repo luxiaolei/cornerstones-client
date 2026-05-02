@@ -799,7 +799,7 @@ Example output (redacted / shape-preserving):
 
 ### China A-share examples
 
-FMP-first A-share support uses provider-native suffixes and exchange codes:
+Current A-share support uses provider-native suffixes and exchange codes:
 
 ```bash
 cornerstones-client stocks quote --symbol 600519.SS
@@ -816,7 +816,7 @@ Contracts:
 - Shanghai quote/profile/bars symbols use `.SS`; `.SH` is normalized to `.SS` by Core.
 - Shenzhen quote/profile/bars symbols use `.SZ`.
 - Screener exchange codes are `SHH` and `SHZ`.
-- Beijing/BSE `.BJ` is explicit unsupported in the FMP-first phase; use the later Tushare/AkShare provider phase for BJ, metadata, adjusted bars, and China-specific enrichment.
+- Beijing/BSE `.BJ` is explicitly unsupported in the current public phase; later China-specific enrichment can add BJ metadata and adjusted bars.
 
 ## Options
 
