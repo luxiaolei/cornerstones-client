@@ -101,24 +101,31 @@ def _read_error_body(exc: HTTPError) -> str:
 def request_json(spec: RouteSpec, config: RuntimeConfig) -> dict[str, Any]:
     url = _url_with_params(f"{config.base_url}{spec.path}", spec.params)
     headers: dict[str, str] = {}
-    if spec.auth_required:
-        if not config.api_key:
-            raise MissingAuth()
-        headers["Authorization"] = f"Bearer {config.api_key}"
+    data: bytes | None = None
+    auth_header: str | None = None
+    if config.api_key:
+        auth_header = f"Bearer {config.api_key}"
+    elif spec.auth_required:
+        raise MissingAuth()
+    if auth_header:
+        headers["Authorization"] = auth_header
+    if spec.json_body is not None:
+        data = json.dumps(spec.json_body, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        headers["Content-Type"] = "application/json"
 
-    request = Request(url, headers=headers, method=spec.method)
+    request = Request(url, data=data, headers=headers, method=spec.method)
     try:
         with urlopen(request, timeout=spec.timeout) as response:
             body = response.read().decode("utf-8", errors="replace")
             status_code = getattr(response, "status", response.getcode())
     except HTTPError as exc:
-        if exc.code in {404, 405, 501}:
+        if exc.code in {404, 405, 501} or (exc.code in {401, 403} and not spec.auth_required and not config.api_key):
             raise FastPathFallback(f"unsupported by running server: {exc.code}") from exc
         raise FastPathHTTPError(exc.code, url, _read_error_body(exc)) from exc
     except URLError as exc:
         raise FastPathFallback(str(exc)) from exc
 
-    if status_code in {404, 405, 501}:
+    if status_code in {404, 405, 501} or (status_code in {401, 403} and not spec.auth_required and not config.api_key):
         raise FastPathFallback(f"unsupported by running server: {status_code}")
     if status_code >= 400:
         raise FastPathHTTPError(status_code, url, _redact_body(body))

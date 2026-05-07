@@ -4,6 +4,11 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.12
+
+- Expanded import-cheap fast-path coverage for read-only Core CLI commands across macro, events, options, orderflow, stocks, crypto, geopolitics, polymarket, cross-asset, alerts, and evidence surfaces.
+- Hardened fast-path flag parity, optional-auth fallback behavior, POST JSON bodies, and source-paired credential handling for env-provided API hosts.
+
 ## 0.1.11
 
 - Added import-cheap fast-path runner support for Core `cornerstones` CLI high-frequency read commands.

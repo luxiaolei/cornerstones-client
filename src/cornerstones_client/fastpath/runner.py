@@ -31,7 +31,7 @@ def run(argv: Sequence[str] | None = None) -> int | None:
         _print({"error": "not_logged_in", "message": "run `cornerstones auth login --api-key ...` first"})
         return 1
     except FastPathFallback:
-        if "config" in locals() and config.source == "env" and spec.auth_required:
+        if "config" in locals() and config.source == "env" and (spec.auth_required or spec.path.startswith("/v1/")):
             _print(
                 {
                     "error": "fastpath_unavailable",
@@ -47,7 +47,7 @@ def run(argv: Sequence[str] | None = None) -> int | None:
         _print(exc.payload())
         return 1
     except Exception:
-        if "config" in locals() and config.source == "env" and spec.auth_required:
+        if "config" in locals() and config.source == "env" and (spec.auth_required or spec.path.startswith("/v1/")):
             _print(
                 {
                     "error": "fastpath_unavailable",
