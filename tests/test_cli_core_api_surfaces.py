@@ -233,4 +233,4 @@ def test_subscription_mutations_require_yes(monkeypatch, capsys):
 
 
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.10"
+    assert __version__ == "0.1.11"

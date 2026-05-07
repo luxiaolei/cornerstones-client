@@ -4,6 +4,12 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.11
+
+- Added import-cheap fast-path runner support for Core `cornerstones` CLI high-frequency read commands.
+- Added source-paired auth/config handling so env base URLs never receive stored core/client bearer credentials.
+- Added URL/body/message redaction and no-redirect HTTP behavior for fast-path error handling.
+
 ## 0.1.10
 
 - Added FMP-first China A-share client parity for stocks commands, including Shanghai/Shenzhen examples (`.SS`/`.SZ`), screener exchange codes (`SHH`/`SHZ`), `normalize-symbol`, and `exchanges` helper surfaces.
