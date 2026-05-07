@@ -4,6 +4,12 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.13
+
+- Let stored browser-trial tokens authenticate GET-based market reads, so `trial token` can be followed by basic quote/read commands without a paid API key.
+- Kept trial reads on the Free plan boundary; Pro and Max surfaces still return structured plan-gate errors.
+- Normalized public CLI output so upstream provider labels are not exposed in customer-facing payloads.
+
 ## 0.1.12
 
 - Expanded import-cheap fast-path coverage for read-only Core CLI commands across macro, events, options, orderflow, stocks, crypto, geopolitics, polymarket, cross-asset, alerts, and evidence surfaces.

@@ -73,7 +73,7 @@ def load_runtime_config() -> RuntimeConfig:
         )
 
     if _has_payload(client_config):
-        api_key = client_config.get("api_key") or env_api_key
+        api_key = client_config.get("api_key") or client_config.get("trial_token") or env_api_key
         return RuntimeConfig(
             str(client_config.get("api_base_url") or DEFAULT_CLIENT_API_BASE_URL).rstrip("/"),
             str(api_key) if api_key else None,

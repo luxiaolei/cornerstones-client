@@ -4,18 +4,18 @@
 
 It exposes **customer-safe read surfaces** plus **customer-owned alert/event subscription create/delete flows**. It intentionally does **not** expose admin/operator/internal/destructive flows such as alert dispatch/replay/resolve/test, event receipt submission/export, order-flow collection jobs, or maintenance jobs.
 
-Current documented release: `0.1.10`.
+Current documented release: `0.1.13`.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.10
+python -m pip install -U cornerstones-client==0.1.13
 ```
 
 Requirements:
 
 - Python `>=3.11`
-- issued Cornerstones API key for authenticated data
+- browser trial token or issued Cornerstones API key for authenticated data
 - network access to `https://api.usecornerstones.com`
 
 ## Access matrix

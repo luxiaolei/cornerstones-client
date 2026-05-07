@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from cornerstones_client.cli import build_headers, main, select_discovery_bearer
+from cornerstones_client.public_safety import sanitize_public_payload
 
 
 def test_select_discovery_bearer_prefers_api_key_before_trial_token():
@@ -26,6 +29,18 @@ def test_build_headers_includes_cookie_and_selected_bearer():
     assert headers["Cookie"] == "cornerstones_trial_session=abc"
 
 
+def test_build_headers_accepts_trial_token_for_authenticated_reads():
+    config = {
+        "api_key": None,
+        "trial_token": "ctrial_trial.secret",
+        "trial_cookie": None,
+    }
+
+    headers = build_headers(config, allow_trial=True, require_api_key=True)
+
+    assert headers["Authorization"] == "Bearer ctrial_trial.secret"
+
+
 def test_cli_help_renders_public_safe_description(monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["cornerstones-client", "--help"])
 
@@ -38,3 +53,27 @@ def test_cli_help_renders_public_safe_description(monkeypatch, capsys):
     assert "auth" in output
     assert "trial" in output
     assert "verify" in output
+
+
+def test_public_payload_sanitizer_hides_upstream_provider_labels():
+    payload = {
+        "provenance": "mt5+fmp+fmp+fmp+adanos",
+        "message": "Multi-provider gold context [MT5/FMP/Adanos]",
+        "fallback": {"from_provider": "okx", "to_provider": "bybit", "note": "OKX timeout"},
+        "providers": {"mt5": {"ready": True}, "fmp": {"ready": True}},
+        "orderflow": {"provider": "rithmic", "provenance": "cornerstones+rithmic:stream"},
+        "chart": {"engine": "tradingview_widget_local", "exchange_resolved": "OANDA"},
+    }
+
+    sanitized = sanitize_public_payload(payload)
+    serialized = json.dumps(sanitized)
+
+    assert sanitized["provenance"] == "cornerstones_gold_context"
+    assert sanitized["fallback"]["from_provider"] == "cornerstones_crypto"
+    assert sanitized["fallback"]["to_provider"] == "cornerstones_crypto"
+    assert sorted(sanitized["providers"]) == ["cornerstones_equities", "cornerstones_market_data"]
+    assert sanitized["orderflow"]["provider"] == "cornerstones_orderflow"
+    assert sanitized["orderflow"]["provenance"] == "cornerstones_orderflow:stream"
+    assert sanitized["chart"]["engine"] == "cornerstones_chart_renderer"
+    for forbidden in ("mt5", "fmp", "rithmic", "adanos", "okx", "bybit", "oanda", "tradingview"):
+        assert forbidden not in serialized.lower()

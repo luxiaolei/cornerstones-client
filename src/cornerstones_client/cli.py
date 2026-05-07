@@ -9,6 +9,7 @@ from typing import Any
 import httpx
 
 from .config import DEFAULT_API_BASE_URL, DEFAULT_PORTAL_BASE_URL, load_config, save_config
+from .public_safety import sanitize_public_payload
 
 
 def _redact_secrets(value: Any) -> Any:
@@ -27,7 +28,8 @@ def _redact_secrets(value: Any) -> Any:
 
 
 def _print(payload: dict[str, Any], *, redact: bool = False) -> None:
-    safe_payload = _redact_secrets(payload) if redact else payload
+    safe_payload = sanitize_public_payload(payload)
+    safe_payload = _redact_secrets(safe_payload) if redact else safe_payload
     print(json.dumps(safe_payload, indent=2, ensure_ascii=False))
 
 
@@ -48,8 +50,8 @@ def build_headers(config: dict[str, Any], *, allow_trial: bool = False, require_
     bearer = config.get("api_key")
     if not bearer and allow_trial:
         bearer = config.get("trial_token")
-    if require_api_key and not config.get("api_key"):
-        _fail("not_logged_in", "Run auth login first.")
+    if require_api_key and not bearer:
+        _fail("not_logged_in", "Run auth login or trial token first.")
     if bearer:
         headers["Authorization"] = f"Bearer {bearer}"
     if config.get("trial_cookie"):
@@ -191,7 +193,7 @@ def _authenticated_get(route: str, *, params: dict[str, Any] | list[tuple[str, A
     with httpx.Client(timeout=30.0) as client:
         response = client.get(
             f"{_api_base_url(config)}{route}",
-            headers=build_headers(config, require_api_key=True),
+            headers=build_headers(config, allow_trial=True, require_api_key=True),
             params=params,
         )
     return _parse_response(response, error=error)

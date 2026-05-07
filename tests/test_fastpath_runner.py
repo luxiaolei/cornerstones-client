@@ -278,6 +278,21 @@ def test_fastpath_config_env_base_uses_only_explicit_env_key(monkeypatch, tmp_pa
     assert config.source == "client"
 
 
+def test_fastpath_config_uses_client_trial_token_for_trial_reads(monkeypatch, tmp_path):
+    from cornerstones_client.fastpath.config import load_runtime_config
+
+    client_dir = tmp_path / "cornerstones-client"
+    client_dir.mkdir(parents=True)
+    (client_dir / "config.json").write_text(json.dumps({"api_base_url": "https://client.example", "trial_token": "ctrial_client"}))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+
+    config = load_runtime_config()
+
+    assert config.base_url == "https://client.example"
+    assert config.api_key == "ctrial_client"
+    assert config.source == "client"
+
+
 def test_fastpath_config_env_base_is_explicit_override(monkeypatch, tmp_path):
     from cornerstones_client.fastpath.config import load_runtime_config
 
@@ -418,7 +433,7 @@ def test_fastpath_runner_uses_core_config_and_credentials(monkeypatch, tmp_path,
             return 200
 
         def read(self):
-            return b'{"ok": true}'
+            return b'{"provenance":"mt5","message":"MT5 realtime quote"}'
 
     def fake_urlopen(request, timeout):
         calls.append((request.get_method(), request.full_url, request.get_header("Authorization")))
@@ -428,7 +443,10 @@ def test_fastpath_runner_uses_core_config_and_credentials(monkeypatch, tmp_path,
 
     assert run(["fx", "quote", "--symbol", "EURUSD"]) == 0
     assert calls == [("GET", "http://api.test/v1/fx/quote?symbol=EURUSD", "Bearer test")]
-    assert json.loads(capsys.readouterr().out) == {"ok": True}
+    assert json.loads(capsys.readouterr().out) == {
+        "provenance": "cornerstones_market_data",
+        "message": "cornerstones_market_data realtime quote",
+    }
 
 
 def test_fastpath_runner_blocks_env_source_fallback_for_auth_route(monkeypatch, tmp_path, capsys):

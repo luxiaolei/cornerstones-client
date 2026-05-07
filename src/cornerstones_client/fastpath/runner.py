@@ -6,11 +6,12 @@ from typing import Any, Sequence
 
 from .config import load_runtime_config
 from .http import FastPathFallback, FastPathHTTPError, FastPathRequestFailed, MissingAuth, request_json
+from ..public_safety import sanitize_public_payload
 from .routes import match_route
 
 
 def _print(payload: dict[str, Any]) -> None:
-    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    print(json.dumps(sanitize_public_payload(payload), indent=2, ensure_ascii=False))
 
 
 def run(argv: Sequence[str] | None = None) -> int | None:
