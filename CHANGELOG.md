@@ -4,6 +4,8 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.14
+
 - Hardened options chain/wall/analysis client parity for Core option truth envelopes: `sec_type=OPT`, `underlying_type`, quote/Greeks/liquidity quality metadata, and read-only safety wording in CLI help/docs.
 - Added public aliases for options flags: `--expiration`/`--expiration-date` and `--threshold`/`--threshold-percentile`.
 - Kept client options surfaces non-execution-only: no BAG/ComboLeg construction, what-if, order submit/cancel, risk, or reconciliation.
