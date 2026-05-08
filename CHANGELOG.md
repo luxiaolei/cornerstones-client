@@ -8,7 +8,9 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 - Let stored browser-trial tokens authenticate GET-based market reads, so `trial token` can be followed by basic quote/read commands without a paid API key.
 - Kept trial reads on the Free plan boundary; Pro and Max surfaces still return structured plan-gate errors.
-- Normalized public CLI output so upstream provider labels are not exposed in customer-facing payloads.
+- Sanitized public CLI and fast-path output so upstream vendor/provider labels are normalized before display.
+- Updated chart docs/examples for Core `cornerstones_chart_renderer` output and chart bundle artifact semantics.
+- Kept client thin: no renderer logic added; chart commands still call Core API and return artifact metadata/URLs.
 
 ## 0.1.12
 

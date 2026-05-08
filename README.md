@@ -66,8 +66,8 @@ cornerstones-client alerts subscribe \
 - `orderflow raw` (Max)
 - `orderflow historical` (Max)
 - `orderflow liquidity-metrics` (Max)
-- `chart fx` (Pro+)
-- `chart stocks` (Pro+)
+- `chart fx` (Pro+) — returns Core-rendered artifact URLs/manifest; public output uses `cornerstones_chart_renderer` labels.
+- `chart stocks` (Pro+) — supports intermarket/context bundles when Core has explicit benchmark mappings.
 - `crypto quote`
 - `crypto ticker`
 - `crypto bars`
@@ -482,7 +482,7 @@ cornerstones-client chart fx --symbol XAUUSD --timeframe H1 --bars 120 --indicat
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"XAUUSD","image_url":"https://api.usecornerstones.com/artifacts/chart_xxx.png","manifest_url":"https://api.usecornerstones.com/artifacts/chart_xxx.json","degraded":false}
+{"symbol":"XAUUSD","engine":"cornerstones_chart_renderer","image_url":"https://api.usecornerstones.com/artifacts/chart_xxx.png","manifest_url":"https://api.usecornerstones.com/artifacts/chart_xxx.json","degraded":false}
 ```
 
 ### `chart stocks`
@@ -496,7 +496,7 @@ cornerstones-client chart stocks --symbol AAPL --timeframe 1d --bars 80
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"AAPL","image_url":"https://api.usecornerstones.com/artifacts/chart_xxx.png","degraded":false,"warnings":[]}
+{"symbol":"AAPL","engine":"cornerstones_chart_renderer","image_url":"https://api.usecornerstones.com/artifacts/chart_xxx.png","degraded":false,"warnings":[]}
 ```
 
 ## Crypto
