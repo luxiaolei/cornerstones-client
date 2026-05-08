@@ -748,9 +748,30 @@ def main() -> None:
 
     options_parser = sub.add_parser("options", help="Read authenticated stock options surfaces")
     options_sub = options_parser.add_subparsers(dest="options_cmd", required=True)
-    c = options_sub.add_parser("chain"); c.add_argument("--symbol", required=True); c.add_argument("--expiration-date"); c.add_argument("--option-type", default="both"); c.add_argument("--moneyness", default="all"); c.add_argument("--depth"); c.add_argument("--max-expirations"); c.add_argument("--include"); c.add_argument("--sort", default="moneyness"); c.add_argument("--preset", default="compact"); c.set_defaults(func=cmd_options)
-    c = options_sub.add_parser("analysis"); c.add_argument("--symbol", required=True); c.add_argument("--expiration-date"); c.set_defaults(func=cmd_options)
-    c = options_sub.add_parser("wall"); c.add_argument("--symbol", required=True); c.add_argument("--expiration-date"); c.add_argument("--threshold-percentile", type=float, default=90.0); c.set_defaults(func=cmd_options)
+    c = options_sub.add_parser(
+        "chain",
+        help="Fetch read-only option chain truth envelope (identity + quote/Greeks/liquidity metadata)",
+        description="Read-only option chain truth envelope. Surfaces sec_type=OPT, underlying_type, quote/Greeks/liquidity quality metadata. No BAG/ComboLeg/whatIf/submit/cancel/risk/reconciliation.",
+    )
+    c.add_argument("--symbol", required=True, help="Underlying symbol, e.g. AAPL or SPX")
+    c.add_argument("--expiration", "--expiration-date", dest="expiration_date", help="Optional expiration date YYYY-MM-DD")
+    c.add_argument("--option-type", default="both", choices=["call", "put", "both"], help="Filter contracts by side")
+    c.add_argument("--moneyness", default="all", choices=["all", "itm", "atm", "otm"], help="Filter by moneyness against reference price")
+    c.add_argument("--depth", type=int, help="Max strikes per expiration")
+    c.add_argument("--max-expirations", type=int, help="Max expirations to return")
+    c.add_argument("--include", help="Projection fields: quote,greeks,oi,volume,iv")
+    c.add_argument("--sort", default="moneyness", choices=["moneyness", "strike", "oi", "volume"], help="Output sort order")
+    c.add_argument("--preset", default="compact", choices=["compact", "expanded"], help="Snapshot preset; does not imply trade permission")
+    c.set_defaults(func=cmd_options)
+    c = options_sub.add_parser("analysis", help="Fetch read-only option analysis with chain quality disclosure")
+    c.add_argument("--symbol", required=True, help="Underlying symbol, e.g. AAPL")
+    c.add_argument("--expiration", "--expiration-date", dest="expiration_date", help="Optional expiration date YYYY-MM-DD")
+    c.set_defaults(func=cmd_options)
+    c = options_sub.add_parser("wall", help="Fetch read-only put/call wall analysis; no broker submit")
+    c.add_argument("--symbol", required=True, help="Underlying symbol, e.g. AAPL")
+    c.add_argument("--expiration", "--expiration-date", dest="expiration_date", help="Optional expiration date YYYY-MM-DD")
+    c.add_argument("--threshold", "--threshold-percentile", dest="threshold_percentile", type=float, default=90.0, help="Open-interest wall percentile threshold")
+    c.set_defaults(func=cmd_options)
 
     macro_parser = sub.add_parser("macro", help="Read authenticated macro surfaces")
     macro_sub = macro_parser.add_subparsers(dest="macro_cmd", required=True)

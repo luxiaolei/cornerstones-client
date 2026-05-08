@@ -234,3 +234,58 @@ def test_subscription_mutations_require_yes(monkeypatch, capsys):
 
 def test_package_version_matches_new_release():
     assert __version__ == "0.1.13"
+
+
+def test_options_chain_command_maps_truth_surface_params(monkeypatch, capsys):
+    _run(monkeypatch, capsys, [
+        "options",
+        "chain",
+        "--symbol",
+        "AAPL",
+        "--max-expirations",
+        "1",
+        "--depth",
+        "2",
+        "--include",
+        "quote,greeks,oi,volume,iv",
+        "--preset",
+        "compact",
+    ])
+
+    _method, url, _headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/options/chain"
+    assert params == {
+        "symbol": "AAPL",
+        "option_type": "both",
+        "moneyness": "all",
+        "depth": 2,
+        "max_expirations": 1,
+        "include": "quote,greeks,oi,volume,iv",
+        "sort": "moneyness",
+        "preset": "compact",
+    }
+
+
+def test_options_wall_and_analysis_accept_public_aliases(monkeypatch, capsys):
+    _run(monkeypatch, capsys, ["options", "wall", "--symbol", "AAPL", "--threshold", "95"])
+    _method, wall_url, _headers, wall_params = _FakeClient.calls[-1]
+    assert wall_url == "http://api.test/v1/options/wall"
+    assert wall_params == {"symbol": "AAPL", "threshold_percentile": 95.0}
+
+    _run(monkeypatch, capsys, ["options", "analysis", "--symbol", "AAPL", "--expiration", "2026-05-15"])
+    _method, analysis_url, _headers, analysis_params = _FakeClient.calls[-1]
+    assert analysis_url == "http://api.test/v1/options/analysis"
+    assert analysis_params == {"symbol": "AAPL", "expiration_date": "2026-05-15"}
+
+
+def test_options_chain_help_documents_truth_identity_quality_and_no_submit(monkeypatch, capsys):
+    monkeypatch.setattr("sys.argv", ["cornerstones-client", "options", "chain", "--help"])
+
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "truth envelope" in output
+    assert "quote,greeks,oi,volume,iv" in output
+    assert "does not imply trade permission" in output

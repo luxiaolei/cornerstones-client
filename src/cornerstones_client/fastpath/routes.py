@@ -170,7 +170,7 @@ def _match_options(tokens: Sequence[str]) -> RouteSpec | None:
         params = _parse_flags(
             tokens[2:],
             defaults={"symbol": "AAPL", "option_type": "both", "moneyness": "all", "sort": "moneyness", "preset": "compact"},
-            allowed={"symbol", "expiration", "option_type", "moneyness", "depth", "max_expirations", "include", "sort", "preset"},
+            allowed={"symbol", "expiration", "expiration_date", "option_type", "moneyness", "depth", "max_expirations", "include", "sort", "preset"},
             name_map={"expiration": "expiration_date"},
             choices={
                 "option_type": {"call", "put", "both"},
@@ -184,7 +184,7 @@ def _match_options(tokens: Sequence[str]) -> RouteSpec | None:
         params = _parse_flags(
             tokens[2:],
             defaults={"symbol": "AAPL", "threshold_percentile": 90.0},
-            allowed={"symbol", "expiration", "threshold"},
+            allowed={"symbol", "expiration", "expiration_date", "threshold", "threshold_percentile"},
             name_map={"expiration": "expiration_date", "threshold": "threshold_percentile"},
         )
         return None if params is None else _spec("/v1/options/wall", params, timeout=60.0)
@@ -192,7 +192,7 @@ def _match_options(tokens: Sequence[str]) -> RouteSpec | None:
         params = _parse_flags(
             tokens[2:],
             defaults={"symbol": "AAPL"},
-            allowed={"symbol", "expiration"},
+            allowed={"symbol", "expiration", "expiration_date"},
             name_map={"expiration": "expiration_date"},
         )
         return None if params is None else _spec("/v1/options/analysis", params, timeout=60.0)

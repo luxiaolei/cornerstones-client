@@ -736,18 +736,24 @@ Example output (redacted / shape-preserving):
 
 ## Options
 
+Options are read-only market-truth surfaces. Cornerstones/client expose chain, wall, and analysis data only; they do not expose BAG/ComboLeg construction, what-if, order submit/cancel, risk, or reconciliation.
+
 ### `options chain`
 
 Command:
 
 ```bash
-cornerstones-client options chain --symbol AAPL --max-expirations 1
+cornerstones-client options chain --symbol AAPL --max-expirations 1 --include quote,greeks,oi,volume,iv
 ```
+
+Aliases:
+
+- `--expiration` and `--expiration-date`
 
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"AAPL","count":12,"contracts":[{"right":"C","strike":215.0,"expiration":"2026-05-15"}],"degraded":false}
+{"chain":{"underlying_symbol":"AAPL","sec_type":"OPT","underlying_type":"STK","total_contracts":12,"quality_metadata":{"contract_count":12,"contracts_with_bid_ask":10,"contracts_with_greeks":8,"contracts_with_volume":6,"contracts_with_open_interest":12},"contracts":[{"sec_type":"OPT","option_type":"call","strike":215.0,"expiration_date":"2026-05-15T00:00:00","underlying_type":"STK","has_bid_ask":true,"has_mid":true,"has_greeks":true,"has_volume":true,"has_open_interest":true}],"degraded":false,"provenance":"cornerstones_options_primary"},"provenance":"cornerstones_options_primary","degraded":false,"fallback":null}
 ```
 
 ### `options analysis`
@@ -755,13 +761,13 @@ Example output (redacted / shape-preserving):
 Command:
 
 ```bash
-cornerstones-client options analysis --symbol AAPL
+cornerstones-client options analysis --symbol AAPL --expiration 2026-05-15
 ```
 
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"AAPL","put_call_ratio":2.506,"max_pain":265.0,"degraded":false}
+{"analysis":{"underlying_symbol":"AAPL","put_call_ratio":2.506,"max_pain_strike":265.0,"degraded":false,"provenance":"cornerstones_options_primary","data_quality":{"chain_quality":{"contract_count":12,"contracts_with_greeks":8}}},"message":"Options analysis for AAPL"}
 ```
 
 ### `options wall`
@@ -769,13 +775,18 @@ Example output (redacted / shape-preserving):
 Command:
 
 ```bash
-cornerstones-client options wall --symbol AAPL
+cornerstones-client options wall --symbol AAPL --threshold 90
 ```
+
+Aliases:
+
+- `--threshold` and `--threshold-percentile`
+- `--expiration` and `--expiration-date`
 
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"AAPL","walls":[{"type":"call","strike":250.0,"open_interest":1200}],"degraded":false}
+{"wall":{"underlying_symbol":"AAPL","call_walls":[{"strike":250.0,"open_interest":1200,"volume":300,"percentile":95.0}],"put_walls":[],"degraded":false,"provenance":"cornerstones_options_primary","data_quality":{"wall_metric":"open_interest","has_open_interest_data":true}},"message":"Options wall analysis for AAPL"}
 ```
 
 ## Macro
