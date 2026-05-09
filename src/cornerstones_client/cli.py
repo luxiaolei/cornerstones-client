@@ -41,17 +41,13 @@ def _fail(error: str, message: str, *, status_code: int | None = None) -> None:
     raise SystemExit(1)
 
 
-def select_discovery_bearer(config: dict[str, Any]) -> str | None:
-    return config.get("api_key") or config.get("trial_token")
-
-
 def build_headers(config: dict[str, Any], *, allow_trial: bool = False, require_api_key: bool = False) -> dict[str, str]:
     headers: dict[str, str] = {}
     bearer = config.get("api_key")
-    if not bearer and allow_trial:
+    if not bearer and allow_trial and not require_api_key:
         bearer = config.get("trial_token")
     if require_api_key and not bearer:
-        _fail("not_logged_in", "Run auth login or trial token first.")
+        _fail("not_logged_in", "Run auth login with an issued API key first.")
     if bearer:
         headers["Authorization"] = f"Bearer {bearer}"
     if config.get("trial_cookie"):
@@ -160,16 +156,8 @@ def cmd_trial(args: argparse.Namespace) -> None:
 
 
 def _run_discovery_route(route: str) -> None:
-    config = _ensure_trial_token(load_config())
-    with httpx.Client(timeout=20.0) as client:
-        response = client.get(f"{_api_base_url(config)}{route}", headers=build_headers(config, allow_trial=True))
-    if response.status_code >= 400:
-        try:
-            payload = response.json()
-        except Exception:
-            payload = {}
-        _fail(payload.get("error", "discovery_request_failed"), payload.get("message", response.text), status_code=response.status_code)
-    _print(response.json())
+    payload = _public_get(route, error="discovery_request_failed")
+    _print(payload)
 
 
 def _parse_response(response: httpx.Response, *, error: str) -> dict[str, Any]:
@@ -188,12 +176,23 @@ def _parse_response(response: httpx.Response, *, error: str) -> dict[str, Any]:
     return {"data": payload}
 
 
+def _public_get(route: str, *, params: dict[str, Any] | list[tuple[str, Any]] | None = None, error: str = "request_failed") -> dict[str, Any]:
+    config = load_config()
+    with httpx.Client(timeout=30.0) as client:
+        response = client.get(
+            f"{_api_base_url(config)}{route}",
+            headers=build_headers(config),
+            params=params,
+        )
+    return _parse_response(response, error=error)
+
+
 def _authenticated_get(route: str, *, params: dict[str, Any] | list[tuple[str, Any]] | None = None, error: str = "request_failed") -> dict[str, Any]:
     config = load_config()
     with httpx.Client(timeout=30.0) as client:
         response = client.get(
             f"{_api_base_url(config)}{route}",
-            headers=build_headers(config, allow_trial=True, require_api_key=True),
+            headers=build_headers(config, require_api_key=True),
             params=params,
         )
     return _parse_response(response, error=error)
@@ -353,11 +352,11 @@ def cmd_alerts(args: argparse.Namespace) -> None:
 def cmd_fx(args: argparse.Namespace) -> None:
     if args.fx_cmd == "quote":
         params = _compact_params({"symbol": args.symbol})
-        _print(_authenticated_get("/v1/fx/quote", params=params, error="fx_quote_failed"))
+        _print(_public_get("/v1/fx/quote", params=params, error="fx_quote_failed"))
         return
     if args.fx_cmd == "bars":
         params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "count": args.count})
-        _print(_authenticated_get("/v1/fx/bars", params=params, error="fx_bars_failed"))
+        _print(_public_get("/v1/fx/bars", params=params, error="fx_bars_failed"))
         return
     if args.fx_cmd == "indicators":
         params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "bars": args.bars})
@@ -423,7 +422,8 @@ def cmd_crypto(args: argparse.Namespace) -> None:
         "bars": getattr(args, "bars", None),
         "limit": getattr(args, "limit", None),
     })
-    _print(_authenticated_get(routes[args.crypto_cmd], params=params, error="crypto_request_failed"))
+    getter = _public_get if args.crypto_cmd in {"quote", "ticker", "bars"} else _authenticated_get
+    _print(getter(routes[args.crypto_cmd], params=params, error="crypto_request_failed"))
 
 
 def cmd_stocks(args: argparse.Namespace) -> None:
@@ -445,7 +445,9 @@ def cmd_stocks(args: argparse.Namespace) -> None:
         "sector": getattr(args, "sector", None), "isEtf": getattr(args, "is_etf", None), "isFund": getattr(args, "is_fund", None),
         "isActivelyTrading": getattr(args, "is_actively_trading", None),
     })
-    _print(_authenticated_get(routes[args.stocks_cmd], params=params, error="stocks_request_failed"))
+    public_cmds = {"quote", "profile", "screener", "universe", "normalize-symbol", "exchanges"}
+    getter = _public_get if args.stocks_cmd in public_cmds else _authenticated_get
+    _print(getter(routes[args.stocks_cmd], params=params, error="stocks_request_failed"))
 
 
 def cmd_options(args: argparse.Namespace) -> None:
@@ -466,7 +468,8 @@ def cmd_macro(args: argparse.Namespace) -> None:
         "from_date": getattr(args, "from_date", None), "to_date": getattr(args, "to_date", None), "country": getattr(args, "country", None),
         "currency": getattr(args, "currency", None), "importance": getattr(args, "importance", None), "category": getattr(args, "category", None),
     })
-    _print(_authenticated_get(routes[args.macro_cmd], params=params, error="macro_request_failed"))
+    getter = _public_get if args.macro_cmd in {"summary", "calendar"} else _authenticated_get
+    _print(getter(routes[args.macro_cmd], params=params, error="macro_request_failed"))
 
 
 def cmd_geopolitics(args: argparse.Namespace) -> None:
@@ -549,11 +552,11 @@ def main() -> None:
     trial_token = trial_sub.add_parser("token")
     trial_token.set_defaults(func=cmd_trial)
 
-    guide_parser = sub.add_parser("guide", help="Fetch product discovery surface using an API key or trial token")
+    guide_parser = sub.add_parser("guide", help="Fetch public product discovery surface")
     guide_parser.set_defaults(func=lambda args: _run_discovery_route("/v1/features"))
 
-    changelog_parser = sub.add_parser("changelog", help="Fetch product changelog using an API key or trial token")
-    changelog_parser.set_defaults(func=lambda args: _run_discovery_route("/v1/changelog"))
+    changelog_parser = sub.add_parser("changelog", help="Fetch admin-only product changelog using an issued admin API key")
+    changelog_parser.set_defaults(func=lambda args: _print(_authenticated_get("/v1/changelog", error="changelog_request_failed")))
 
     evidence_parser = sub.add_parser("evidence", help="Read authenticated evidence surfaces")
     evidence_sub = evidence_parser.add_subparsers(dest="evidence_cmd", required=True)

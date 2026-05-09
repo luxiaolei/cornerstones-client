@@ -4,21 +4,11 @@ import json
 
 import pytest
 
-from cornerstones_client.cli import build_headers, main, select_discovery_bearer
+from cornerstones_client.cli import build_headers, main
 from cornerstones_client.public_safety import sanitize_public_payload
 
 
-def test_select_discovery_bearer_prefers_api_key_before_trial_token():
-    config = {"api_key": "csk_live_secret", "trial_token": "ctrial_trial.secret", "trial_cookie": None}
-    assert select_discovery_bearer(config) == "csk_live_secret"
-
-
-def test_select_discovery_bearer_falls_back_to_trial_token():
-    config = {"api_key": None, "trial_token": "ctrial_trial.secret", "trial_cookie": None}
-    assert select_discovery_bearer(config) == "ctrial_trial.secret"
-
-
-def test_build_headers_includes_cookie_and_selected_bearer():
+def test_build_headers_includes_cookie_and_trial_bearer_only_when_allowed():
     config = {
         "api_key": None,
         "trial_token": "ctrial_trial.secret",
@@ -29,16 +19,27 @@ def test_build_headers_includes_cookie_and_selected_bearer():
     assert headers["Cookie"] == "cornerstones_trial_session=abc"
 
 
-def test_build_headers_accepts_trial_token_for_authenticated_reads():
+def test_build_headers_does_not_use_trial_token_for_api_key_required_reads():
     config = {
         "api_key": None,
         "trial_token": "ctrial_trial.secret",
         "trial_cookie": None,
     }
 
+    with pytest.raises(SystemExit):
+        build_headers(config, allow_trial=True, require_api_key=True)
+
+
+def test_build_headers_uses_api_key_for_api_key_required_reads():
+    config = {
+        "api_key": "csk_live_secret",
+        "trial_token": "ctrial_trial.secret",
+        "trial_cookie": None,
+    }
+
     headers = build_headers(config, allow_trial=True, require_api_key=True)
 
-    assert headers["Authorization"] == "Bearer ctrial_trial.secret"
+    assert headers["Authorization"] == "Bearer csk_live_secret"
 
 
 def test_cli_help_renders_public_safe_description(monkeypatch, capsys):

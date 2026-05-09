@@ -44,10 +44,10 @@ class _FakeClient:
         return _FakeResponse({"ok": True, "url": url, "deleted": True})
 
 
-def _run(monkeypatch, capsys, argv):
+def _run(monkeypatch, capsys, argv, config=None):
     _FakeClient.calls = []
     monkeypatch.setattr(cli.httpx, "Client", _FakeClient)
-    monkeypatch.setattr(cli, "load_config", lambda: {"api_base_url": "http://api.test", "api_key": "ck_test"})
+    monkeypatch.setattr(cli, "load_config", lambda: config or {"api_base_url": "http://api.test", "api_key": "ck_test"})
     monkeypatch.setattr("sys.argv", ["cornerstones-client", *argv])
     cli.main()
     return json.loads(capsys.readouterr().out)
@@ -99,6 +99,16 @@ def test_fx_quote_command_hits_currency_pair_quote_surface(monkeypatch, capsys):
     _method, url, _headers, params = _FakeClient.calls[-1]
     assert url == "http://api.test/v1/fx/quote"
     assert params == {"symbol": "EURUSD"}
+
+
+def test_public_commands_do_not_require_saved_api_key(monkeypatch, capsys):
+    config = {"api_base_url": "http://api.test", "api_key": None, "trial_token": "ctrial.secret", "trial_cookie": None}
+    _run(monkeypatch, capsys, ["macro", "summary"], config=config)
+
+    _method, url, headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/macro/summary"
+    assert headers == {}
+    assert params == {}
 
 
 def test_fx_indicators_command_hits_currency_pair_indicators_surface(monkeypatch, capsys):
