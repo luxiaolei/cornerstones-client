@@ -4,6 +4,12 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.15
+
+- Aligned public CLI access with Core API policy: basic market data reads no longer require a stored API key.
+- Stopped treating browser trial tokens as issued API keys for protected surfaces such as `verify`/`/v1/status`.
+- Kept changelog on issued-key auth so admin-only Core policy is not bypassed by local trial fallback.
+
 ## 0.1.14
 
 - Hardened options chain/wall/analysis client parity for Core option truth envelopes: `sec_type=OPT`, `underlying_type`, quote/Greeks/liquidity quality metadata, and read-only safety wording in CLI help/docs.
