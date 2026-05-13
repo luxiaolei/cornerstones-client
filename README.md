@@ -777,13 +777,27 @@ Example output (redacted / shape-preserving):
 Command:
 
 ```bash
-cornerstones-client stocks filings --symbol AAPL --form 10-Q --limit 3
+cornerstones-client stocks filings --symbol AAPL --provider sec --form 10-Q --limit 3
 ```
 
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"AAPL","count":3,"filings":[{"form":"10-Q","filed_at":"2026-04-25","url":"https://www.sec.gov/..."}]}
+{"symbol":"AAPL","provider":"sec","limit":3,"filings":[{"form_type":"10-Q","filed_at":"2026-04-25T00:00:00Z","url":"https://www.sec.gov/Archives/..."}],"data_quality":{"official_source":true},"degraded":false}
+```
+
+### `stocks facts`
+
+Command:
+
+```bash
+cornerstones-client stocks facts --symbol AAPL --provider sec --period annual --limit 5
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","provider":"sec","period":"annual","facts":[{"concept":"Revenues","unit":"USD","value":391035000000,"fiscal_period":"FY"}],"data_quality":{"official_source":true},"degraded":false}
 ```
 
 ### `stocks corporate-actions`
