@@ -366,6 +366,14 @@ def cmd_fx(args: argparse.Namespace) -> None:
         params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "bars": args.bars})
         _print(_authenticated_get("/v1/fx/session", params=params, error="fx_session_failed"))
         return
+    if args.fx_cmd == "options-proxy":
+        params = _compact_params({"symbol": args.symbol})
+        _print(_authenticated_get("/v1/fx/options-proxy", params=params, error="fx_options_proxy_failed"))
+        return
+    if args.fx_cmd == "positioning":
+        params = _compact_params({"symbol": args.symbol})
+        _print(_authenticated_get("/v1/fx/positioning", params=params, error="fx_positioning_failed"))
+        return
 
 
 def cmd_context(args: argparse.Namespace) -> None:
@@ -650,6 +658,12 @@ def main() -> None:
     fx_session.add_argument("--timeframe", default="H1")
     fx_session.add_argument("--bars", type=int, default=200)
     fx_session.set_defaults(func=cmd_fx)
+    fx_options_proxy = fx_sub.add_parser("options-proxy", help="Fetch support-only ETF options proxy evidence for an FX pair; no trade signal or submit authority")
+    fx_options_proxy.add_argument("--symbol", required=True)
+    fx_options_proxy.set_defaults(func=cmd_fx)
+    fx_positioning = fx_sub.add_parser("positioning", help="Fetch FX positioning provider-availability contract")
+    fx_positioning.add_argument("--symbol", required=True)
+    fx_positioning.set_defaults(func=cmd_fx)
 
     context_parser = sub.add_parser("context", help="Read authenticated market context surfaces")
     context_sub = context_parser.add_subparsers(dest="context_cmd", required=True)

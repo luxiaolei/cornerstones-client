@@ -4,6 +4,13 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.16
+
+- Added client parity for Core FX support surfaces:
+  - `fx options-proxy` for support-only ETF options proxy evidence.
+  - `fx positioning` for explicit FX positioning provider-availability contracts.
+- Added import-cheap fast-path mappings, tests, and docs for the new FX endpoints.
+
 ## 0.1.15
 
 - Aligned public CLI access with Core API policy: basic market data reads no longer require a stored API key.

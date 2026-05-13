@@ -13,7 +13,7 @@ This is the customer-facing product contract for the public `cornerstones-client
 
 - Discovery: `guide`, `changelog`, `/v1/features`, `/v1/changelog` work with a trial token or API key.
 - Verification: `verify` / `/v1/status` requires a real issued API key.
-- Basic market truth: FX quote/bars/indicators/session, crypto public market reads, stock quote/profile/context-adjacent basic reads, bounded screener/universe workflows, public macro summary/calendar are API-key surfaces and may fit Free quota when not explicitly premium-gated.
+- Basic market truth: FX quote/bars/indicators/session, FX `fx options-proxy` support-only ETF options proxy evidence, FX `fx positioning` provider-availability contract, crypto public market reads, stock quote/profile/context-adjacent basic reads, bounded screener/universe workflows, public macro summary/calendar are API-key surfaces and may fit Free quota when not explicitly premium-gated.
 - Charts: `chart fx` and `chart stocks` require Pro or Max.
 - Agent context: `context fx`, `context gold`, `cross-asset` require Pro or Max.
 - Options: `options chain`, `options wall`, and `options analysis` require Pro or Max.

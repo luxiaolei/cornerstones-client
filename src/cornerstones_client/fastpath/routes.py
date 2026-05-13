@@ -467,6 +467,20 @@ def match_route(argv: Sequence[str]) -> RouteSpec | None:
         )
         return None if params is None else _spec("/v1/fx/session", params)
 
+    if tokens[:2] == ["fx", "options-proxy"]:
+        params = _with_required(
+            _parse_flags(tokens[2:], defaults={}, allowed={"symbol"}),
+            "symbol",
+        )
+        return None if params is None else _spec("/v1/fx/options-proxy", params)
+
+    if tokens[:2] == ["fx", "positioning"]:
+        params = _with_required(
+            _parse_flags(tokens[2:], defaults={}, allowed={"symbol"}),
+            "symbol",
+        )
+        return None if params is None else _spec("/v1/fx/positioning", params)
+
     if tokens[:2] == ["stocks", "quote"]:
         params = _parse_flags(tokens[2:], defaults={"symbol": "AAPL"}, allowed={"symbol"})
         return None if params is None else _spec("/v1/stocks/quote", params)

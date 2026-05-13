@@ -4,12 +4,12 @@
 
 It exposes **customer-safe read surfaces** plus **customer-owned alert/event subscription create/delete flows**. It intentionally does **not** expose admin/operator/internal/destructive flows such as alert dispatch/replay/resolve/test, event receipt submission/export, order-flow collection jobs, or maintenance jobs.
 
-Current documented release: `0.1.13`.
+Current documented release: `0.1.16`.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.13
+python -m pip install -U cornerstones-client==0.1.16
 ```
 
 Requirements:
@@ -58,6 +58,8 @@ cornerstones-client alerts subscribe \
 - `fx bars`
 - `fx indicators`
 - `fx session`
+- `fx options-proxy`
+- `fx positioning`
 - `context fx`
 - `context gold`
 - `context stocks`
@@ -351,6 +353,34 @@ Example output (redacted / shape-preserving):
 
 ```json
 {"symbol":"XAUUSD","session":"london","range":{"high":2348.2,"low":2339.1},"degraded":false}
+```
+
+### `fx options-proxy`
+
+Command:
+
+```bash
+cornerstones-client fx options-proxy --symbol EURUSD
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"EURUSD","proxy":true,"experimental":true,"proxy_symbols":["FXE"],"proxy_formula":"FXE ETF options as support-only EURUSD volatility proxy; not OTC FX options truth","trust_tier":"support","usage_hint":"support_input","primary_input_allowed":false,"native_otc_fx_options_available":false,"components":[{"proxy_symbol":"FXE","role":"euro_etf_options","analysis":{},"degraded":false}],"provenance":"options_service","degraded":false,"data_quality":{"support_only":true,"component_count":1}}
+```
+
+### `fx positioning`
+
+Command:
+
+```bash
+cornerstones-client fx positioning --symbol EURUSD
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"EURUSD","proxy":true,"experimental":true,"trust_tier":"shadow","usage_hint":"shadow_only","primary_input_allowed":false,"components":{"cot":{"available":false,"status":"provider_missing","usage_hint":"do_not_use"},"futures_oi":{"available":false,"status":"provider_missing","usage_hint":"do_not_use"},"retail_positioning":{"available":false,"status":"provider_missing","usage_hint":"do_not_use"},"broker_flow":{"available":false,"status":"provider_missing","usage_hint":"do_not_use"}},"provenance":"none","degraded":false,"fallback":"positioning_providers_missing","data_quality":{"neutral_positioning_inferred":false}}
 ```
 
 ## Context
