@@ -439,7 +439,7 @@ def cmd_stocks(args: argparse.Namespace) -> None:
         "quote": "/v1/stocks/quote", "profile": "/v1/stocks/profile", "context": "/v1/stocks/context",
         "indicators": "/v1/stocks/indicators", "session": "/v1/stocks/session", "depth": "/v1/stocks/depth",
         "imbalance": "/v1/stocks/imbalance", "tick": "/v1/stocks/tick", "optionability": "/v1/stocks/optionability",
-        "earnings": "/v1/stocks/earnings", "filings": "/v1/stocks/filings", "corporate-actions": "/v1/stocks/corporate-actions",
+        "earnings": "/v1/stocks/earnings", "filings": "/v1/stocks/filings", "facts": "/v1/stocks/facts", "corporate-actions": "/v1/stocks/corporate-actions",
         "screener": "/v1/stocks/screener", "universe": "/v1/stocks/universe",
         "normalize-symbol": "/v1/stocks/symbols/normalize", "exchanges": "/v1/stocks/exchanges",
     }
@@ -447,7 +447,7 @@ def cmd_stocks(args: argparse.Namespace) -> None:
         "symbol": getattr(args, "symbol", None), "timeframe": getattr(args, "timeframe", None), "bars": getattr(args, "bars", None),
         "bars_count": getattr(args, "bars_count", None), "num_rows": getattr(args, "num_rows", None), "exchange": getattr(args, "exchange", None),
         "tick_type": getattr(args, "tick_type", None), "num_ticks": getattr(args, "num_ticks", None), "from": getattr(args, "from_date", None),
-        "to": getattr(args, "to_date", None), "status": getattr(args, "status", None), "form": getattr(args, "form", None),
+        "to": getattr(args, "to_date", None), "status": getattr(args, "status", None), "provider": getattr(args, "provider", None), "form": getattr(args, "form", None), "period": getattr(args, "period", None),
         "type": getattr(args, "type", None), "limit": getattr(args, "limit", None), "preset": getattr(args, "preset", None),
         "marketCapMoreThan": getattr(args, "market_cap_more_than", None), "volumeMoreThan": getattr(args, "volume_more_than", None),
         "sector": getattr(args, "sector", None), "isEtf": getattr(args, "is_etf", None), "isFund": getattr(args, "is_fund", None),
@@ -757,9 +757,15 @@ def main() -> None:
     for name in ["earnings", "filings", "corporate-actions"]:
         c = stocks_sub.add_parser(name); c.add_argument("--symbol", required=True); c.add_argument("--from", dest="from_date"); c.add_argument("--to", dest="to_date")
         if name == "earnings": c.add_argument("--status")
-        if name == "filings": c.add_argument("--form"); c.add_argument("--limit", type=int, default=20)
+        if name == "filings": c.add_argument("--provider", default="fmp", choices=["fmp", "sec", "sec_edgar"]); c.add_argument("--form"); c.add_argument("--limit", type=int, default=20)
         if name == "corporate-actions": c.add_argument("--type", default="all")
         c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("facts", help="Fetch compact SEC EDGAR official company facts; requires configured core SEC user-agent for live data")
+    c.add_argument("--symbol", required=True)
+    c.add_argument("--provider", default="sec", choices=["sec", "sec_edgar"])
+    c.add_argument("--period", choices=["annual", "fy", "quarterly", "quarter", "q1", "q2", "q3", "q4"])
+    c.add_argument("--limit", type=int, default=20)
+    c.set_defaults(func=cmd_stocks)
     c = stocks_sub.add_parser("screener"); c.add_argument("--market-cap-more-than"); c.add_argument("--volume-more-than"); c.add_argument("--exchange", help="Exchange filter, e.g. NASDAQ, NYSE, SHH, SHZ"); c.add_argument("--sector"); c.add_argument("--is-etf"); c.add_argument("--is-fund"); c.add_argument("--is-actively-trading"); c.add_argument("--limit", type=int, default=25); c.set_defaults(func=cmd_stocks)
     c = stocks_sub.add_parser("universe"); c.add_argument("--preset", default="us-stocks-liquid", help="Universe preset, e.g. us-stocks-liquid or china-a-shares-largecap"); c.add_argument("--limit", type=int, default=25); c.set_defaults(func=cmd_stocks)
 

@@ -493,6 +493,27 @@ def match_route(argv: Sequence[str]) -> RouteSpec | None:
         )
         return None if params is None else _spec("/v1/stocks/context", params)
 
+    if tokens[:2] == ["stocks", "filings"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "provider": "fmp", "limit": 20},
+            allowed={"symbol", "provider", "form", "limit", "from", "to"},
+            choices={"provider": {"fmp", "sec", "sec_edgar"}},
+        )
+        return None if params is None else _spec("/v1/stocks/filings", params)
+
+    if tokens[:2] == ["stocks", "facts"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "provider": "sec", "limit": 20},
+            allowed={"symbol", "provider", "period", "limit"},
+            choices={
+                "provider": {"sec", "sec_edgar"},
+                "period": {"annual", "fy", "quarterly", "quarter", "q1", "q2", "q3", "q4"},
+            },
+        )
+        return None if params is None else _spec("/v1/stocks/facts", params)
+
     if tokens[:2] == ["stocks", "optionability"]:
         params = _parse_flags(tokens[2:], defaults={"symbol": "AAPL"}, allowed={"symbol"})
         return None if params is None else _spec("/v1/stocks/optionability", params, auth_required=False, timeout=60.0)

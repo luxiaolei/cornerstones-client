@@ -1,11 +1,11 @@
 # Cornerstones Client CLI Reference
 
-Machine-readable customer CLI reference for `cornerstones-client==0.1.16`.
+Machine-readable customer CLI reference for `cornerstones-client==0.1.17`.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.16
+python -m pip install -U cornerstones-client==0.1.17
 ```
 
 ## Auth/config
@@ -708,14 +708,30 @@ Example output (redacted / shape-preserving):
 Command:
 
 ```bash
-cornerstones-client stocks filings --symbol AAPL --form 10-Q --limit 3
+cornerstones-client stocks filings --symbol AAPL --provider sec --form 10-Q --limit 3
 ```
 
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"AAPL","count":3,"filings":[{"form":"10-Q","filed_at":"2026-04-25","url":"https://www.sec.gov/..."}]}
+{"symbol":"AAPL","provider":"sec","count":3,"filings":[{"form":"10-Q","filing_date":"2026-04-25","accession_number":"0000320193-26-000001","primary_document_url":"https://www.sec.gov/..."}],"degraded":false}
 ```
+
+### `stocks facts`
+
+Command:
+
+```bash
+cornerstones-client stocks facts --symbol AAPL --period annual --limit 4
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","provider":"sec","period":"annual","facts":[{"concept":"Revenues","value":391035000000,"unit":"USD","period_end":"2025-09-27"}],"degraded":false}
+```
+
+Note: live SEC reads require Core runtime `CORNERSTONES_SEC_USER_AGENT` with operator contact. Missing identity degrades safely instead of calling SEC.
 
 ### `stocks corporate-actions`
 
