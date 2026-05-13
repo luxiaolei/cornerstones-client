@@ -4,6 +4,13 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.17
+
+- Added client parity for SEC EDGAR public-data surfaces:
+  - `stocks filings --provider sec` for official SEC company filings.
+  - `stocks facts` for compact official SEC company facts.
+- Added import-cheap fast-path mappings, tests, and docs for the new stock SEC endpoints.
+
 ## 0.1.16
 
 - Added client parity for Core FX support surfaces:

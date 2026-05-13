@@ -135,6 +135,24 @@ def test_fx_positioning_command_hits_provider_availability_contract(monkeypatch,
     assert params == {"symbol": "EURUSD"}
 
 
+def test_stocks_filings_command_can_select_sec_provider(monkeypatch, capsys):
+    _run(monkeypatch, capsys, ["stocks", "filings", "--symbol", "AAPL", "--provider", "sec", "--form", "10-K", "--limit", "2"])
+
+    _method, url, headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/stocks/filings"
+    assert headers["Authorization"] == "Bearer ck_test"
+    assert params == {"symbol": "AAPL", "provider": "sec", "form": "10-K", "limit": 2}
+
+
+def test_stocks_facts_command_hits_sec_company_facts_surface(monkeypatch, capsys):
+    _run(monkeypatch, capsys, ["stocks", "facts", "--symbol", "AAPL", "--period", "annual", "--limit", "4"])
+
+    _method, url, headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/stocks/facts"
+    assert headers["Authorization"] == "Bearer ck_test"
+    assert params == {"symbol": "AAPL", "provider": "sec", "period": "annual", "limit": 4}
+
+
 def test_orderflow_summary_command_hits_orderflow_summary_surface(monkeypatch, capsys):
     _run(monkeypatch, capsys, ["orderflow", "summary", "--symbol", "XAUUSD"])
 
@@ -259,7 +277,7 @@ def test_subscription_mutations_require_yes(monkeypatch, capsys):
 
 
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.16"
+    assert __version__ == "0.1.17"
 
 
 def test_options_chain_command_maps_truth_surface_params(monkeypatch, capsys):
