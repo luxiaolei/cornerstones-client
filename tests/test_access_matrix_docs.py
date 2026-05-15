@@ -18,7 +18,7 @@ def test_public_docs_capture_current_access_matrix():
         "Orderflow requires **Max**",
         "All `orderflow ...` commands are Max-only",
         "The key is a Cornerstones API key",
-        "Current documented release: `0.1.18`",
+        "Current documented release: `0.1.19`",
         "fx options-proxy",
         "fx positioning",
         "support-only ETF options proxy evidence",

@@ -158,6 +158,7 @@ def test_stocks_facts_command_hits_sec_company_facts_surface(monkeypatch, capsys
     [
         (["stocks", "transcripts", "--symbol", "AAPL", "--year", "2025", "--quarter", "4", "--limit", "1", "--include-text"], "/v1/stocks/transcripts", {"symbol": "AAPL", "year": 2025, "quarter": 4, "limit": 1, "include_text": True}),
         (["stocks", "analyst-estimates", "--symbol", "AAPL", "--period", "quarter", "--limit", "6", "--from", "2025-01-01", "--to", "2026-01-01"], "/v1/stocks/analyst-estimates", {"symbol": "AAPL", "period": "quarter", "limit": 6, "from": "2025-01-01", "to": "2026-01-01"}),
+        (["stocks", "analyst-estimates", "--symbol", "AAPL", "--period", "ttm", "--limit", "6"], "/v1/stocks/analyst-estimates", {"symbol": "AAPL", "period": "ttm", "limit": 6}),
         (["stocks", "ratings", "--symbol", "AAPL", "--limit", "7", "--from", "2025-01-01", "--to", "2026-01-01"], "/v1/stocks/ratings", {"symbol": "AAPL", "limit": 7, "from": "2025-01-01", "to": "2026-01-01"}),
         (["stocks", "price-targets", "--symbol", "AAPL", "--limit", "8", "--from", "2025-01-01", "--to", "2026-01-01", "--include-consensus"], "/v1/stocks/price-targets", {"symbol": "AAPL", "limit": 8, "from": "2025-01-01", "to": "2026-01-01", "include_consensus": True}),
         (["stocks", "ratios", "--symbol", "AAPL", "--period", "ttm", "--limit", "5"], "/v1/stocks/ratios", {"symbol": "AAPL", "period": "ttm", "limit": 5}),
@@ -326,7 +327,7 @@ def test_subscription_mutations_require_yes(monkeypatch, capsys):
 
 
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.18"
+    assert __version__ == "0.1.19"
 
 
 def test_options_chain_command_maps_truth_surface_params(monkeypatch, capsys):

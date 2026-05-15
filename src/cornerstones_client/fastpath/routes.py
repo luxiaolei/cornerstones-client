@@ -528,7 +528,7 @@ def match_route(argv: Sequence[str]) -> RouteSpec | None:
             tokens[2:],
             defaults={"symbol": "AAPL", "period": "annual", "limit": 20},
             allowed={"symbol", "period", "limit", "from", "to"},
-            choices={"period": {"annual", "quarter"}},
+            choices={"period": {"annual", "quarter", "ttm"}},
         )
         return None if params is None else _spec("/v1/stocks/analyst-estimates", params)
 

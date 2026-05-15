@@ -781,7 +781,7 @@ def main() -> None:
     c.set_defaults(func=cmd_stocks)
     c = stocks_sub.add_parser("analyst-estimates", help="Fetch analyst estimate rows")
     c.add_argument("--symbol", required=True)
-    c.add_argument("--period", default="annual", choices=["annual", "quarter"])
+    c.add_argument("--period", default="annual", choices=["annual", "quarter", "ttm"])
     c.add_argument("--limit", type=int, default=20)
     c.add_argument("--from", dest="from_date")
     c.add_argument("--to", dest="to_date")
