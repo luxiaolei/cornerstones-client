@@ -4,6 +4,8 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.18
+
 - Added stock research fast-path/client parity for transcripts, analyst estimates, ratings, price targets, ratios, key metrics, and research context.
 
 ## 0.1.17

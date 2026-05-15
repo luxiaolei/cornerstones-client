@@ -326,7 +326,7 @@ def test_subscription_mutations_require_yes(monkeypatch, capsys):
 
 
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.17"
+    assert __version__ == "0.1.18"
 
 
 def test_options_chain_command_maps_truth_surface_params(monkeypatch, capsys):
