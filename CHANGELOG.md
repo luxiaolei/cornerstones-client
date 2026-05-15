@@ -4,6 +4,8 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+- Added stock research fast-path/client parity for transcripts, analyst estimates, ratings, price targets, ratios, key metrics, and research context.
+
 ## 0.1.17
 
 - Added client parity for SEC EDGAR public-data surfaces:
@@ -51,7 +53,7 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## 0.1.10
 
-- Added FMP-first China A-share client parity for stocks commands, including Shanghai/Shenzhen examples (`.SS`/`.SZ`), screener exchange codes (`SHH`/`SHZ`), `normalize-symbol`, and `exchanges` helper surfaces.
+- Added China A-share client parity for stocks commands, including Shanghai/Shenzhen examples (`.SS`/`.SZ`), screener exchange codes (`SHH`/`SHZ`), `normalize-symbol`, and `exchanges` helper surfaces.
 
 ## 0.1.9
 

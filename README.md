@@ -89,6 +89,13 @@ cornerstones-client alerts subscribe \
 - `stocks earnings`
 - `stocks filings`
 - `stocks facts`
+- `stocks transcripts`
+- `stocks analyst-estimates`
+- `stocks ratings`
+- `stocks price-targets`
+- `stocks ratios`
+- `stocks key-metrics`
+- `stocks research-context`
 - `stocks corporate-actions`
 - `stocks screener`
 - `stocks universe`

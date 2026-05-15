@@ -153,6 +153,55 @@ def test_stocks_facts_command_hits_sec_company_facts_surface(monkeypatch, capsys
     assert params == {"symbol": "AAPL", "provider": "sec", "period": "annual", "limit": 4}
 
 
+@pytest.mark.parametrize(
+    ("argv", "route", "params"),
+    [
+        (["stocks", "transcripts", "--symbol", "AAPL", "--year", "2025", "--quarter", "4", "--limit", "1", "--include-text"], "/v1/stocks/transcripts", {"symbol": "AAPL", "year": 2025, "quarter": 4, "limit": 1, "include_text": True}),
+        (["stocks", "analyst-estimates", "--symbol", "AAPL", "--period", "quarter", "--limit", "6", "--from", "2025-01-01", "--to", "2026-01-01"], "/v1/stocks/analyst-estimates", {"symbol": "AAPL", "period": "quarter", "limit": 6, "from": "2025-01-01", "to": "2026-01-01"}),
+        (["stocks", "ratings", "--symbol", "AAPL", "--limit", "7", "--from", "2025-01-01", "--to", "2026-01-01"], "/v1/stocks/ratings", {"symbol": "AAPL", "limit": 7, "from": "2025-01-01", "to": "2026-01-01"}),
+        (["stocks", "price-targets", "--symbol", "AAPL", "--limit", "8", "--from", "2025-01-01", "--to", "2026-01-01", "--include-consensus"], "/v1/stocks/price-targets", {"symbol": "AAPL", "limit": 8, "from": "2025-01-01", "to": "2026-01-01", "include_consensus": True}),
+        (["stocks", "ratios", "--symbol", "AAPL", "--period", "ttm", "--limit", "5"], "/v1/stocks/ratios", {"symbol": "AAPL", "period": "ttm", "limit": 5}),
+        (["stocks", "key-metrics", "--symbol", "AAPL", "--period", "annual", "--limit", "5"], "/v1/stocks/key-metrics", {"symbol": "AAPL", "period": "annual", "limit": 5}),
+        (["stocks", "research-context", "--symbol", "AAPL", "--sections", "transcripts,analyst,valuation", "--limit-per-section", "2", "--include-explanations"], "/v1/stocks/research-context", {"symbol": "AAPL", "sections": "transcripts,analyst,valuation", "limit_per_section": 2, "include_explanations": True}),
+    ],
+)
+def test_stock_research_commands_hit_authenticated_mvp_a_surfaces(monkeypatch, capsys, argv, route, params):
+    _run(monkeypatch, capsys, argv)
+
+    _method, url, headers, actual_params = _FakeClient.calls[-1]
+    assert url == f"http://api.test{route}"
+    assert headers["Authorization"] == "Bearer ck_test"
+    assert actual_params == params
+
+
+@pytest.mark.parametrize(
+    ("argv", "route", "params"),
+    [
+        (["stocks", "transcripts", "--symbol", "AAPL"], "/v1/stocks/transcripts", {"symbol": "AAPL", "limit": 20}),
+        (["stocks", "price-targets", "--symbol", "AAPL"], "/v1/stocks/price-targets", {"symbol": "AAPL", "limit": 20}),
+        (["stocks", "research-context", "--symbol", "AAPL"], "/v1/stocks/research-context", {"symbol": "AAPL", "limit_per_section": 3}),
+    ],
+)
+def test_stock_research_optional_bool_flags_omit_when_absent(monkeypatch, capsys, argv, route, params):
+    _run(monkeypatch, capsys, argv)
+
+    _method, url, _headers, actual_params = _FakeClient.calls[-1]
+    assert url == f"http://api.test{route}"
+    assert actual_params == params
+
+
+def test_stock_research_help_is_provider_safe(capsys, monkeypatch):
+    monkeypatch.setattr("sys.argv", ["cornerstones-client", "stocks", "research-context", "--help"])
+
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "research context" in output.lower()
+    assert "provider" not in output.lower()
+
+
 def test_orderflow_summary_command_hits_orderflow_summary_surface(monkeypatch, capsys):
     _run(monkeypatch, capsys, ["orderflow", "summary", "--symbol", "XAUUSD"])
 

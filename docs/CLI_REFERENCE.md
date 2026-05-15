@@ -28,6 +28,7 @@ cornerstones-client auth set-api-base-url --api-base-url https://api.usecornerst
 - Max API key: adds orderflow raw/summary/context/historical and liquidity metrics.
 
 `verify` always requires a real issued API key. `chart fx` and `chart stocks` are Pro+. All `orderflow ...` commands are Max-only.
+Stock research inputs such as transcripts, analyst estimates, ratings, price targets, ratios, and key metrics are authenticated read-only API-key surfaces.
 
 ## Command catalog with example outputs
 
@@ -530,7 +531,7 @@ A-share phase 1 uses existing `/v1/stocks/*` endpoints with FMP provider contrac
 - Shanghai A-shares: symbol suffix `.SS`, screener exchange `SHH` (example `600519.SS`).
 - Shenzhen A-shares: symbol suffix `.SZ`, screener exchange `SHZ` (example `000001.SZ`).
 - `.SH` user input can be normalized to `.SS` via `stocks normalize-symbol`.
-- `.BJ` / Beijing Stock Exchange is explicitly unsupported in FMP-first phase; planned for Tushare/AkShare phase.
+- `.BJ` / Beijing Stock Exchange is explicitly unsupported in current phase; planned for future China-market coverage.
 
 ### `stocks quote`
 
@@ -732,6 +733,64 @@ Example output (redacted / shape-preserving):
 ```
 
 Note: live SEC reads require Core runtime `CORNERSTONES_SEC_USER_AGENT` with operator contact. Missing identity degrades safely instead of calling SEC.
+
+### `stocks transcripts`
+
+Command:
+
+```bash
+cornerstones-client stocks transcripts --symbol AAPL --year 2025 --quarter 4 --limit 1 --include-text
+```
+
+### `stocks analyst-estimates`
+
+Command:
+
+```bash
+cornerstones-client stocks analyst-estimates --symbol AAPL --period quarter --limit 6 --from 2025-01-01 --to 2026-01-01
+```
+
+### `stocks ratings`
+
+Command:
+
+```bash
+cornerstones-client stocks ratings --symbol AAPL --limit 7 --from 2025-01-01 --to 2026-01-01
+```
+
+### `stocks price-targets`
+
+Command:
+
+```bash
+cornerstones-client stocks price-targets --symbol AAPL --limit 8 --from 2025-01-01 --to 2026-01-01 --include-consensus
+```
+
+### `stocks ratios`
+
+Command:
+
+```bash
+cornerstones-client stocks ratios --symbol AAPL --period ttm --limit 5
+```
+
+### `stocks key-metrics`
+
+Command:
+
+```bash
+cornerstones-client stocks key-metrics --symbol AAPL --period annual --limit 5
+```
+
+### `stocks research-context`
+
+Command:
+
+```bash
+cornerstones-client stocks research-context --symbol AAPL --sections transcripts,analyst,valuation --limit-per-section 2 --include-explanations
+```
+
+These commands return neutral stock research evidence and context inputs. They do not return trading verdicts.
 
 ### `stocks corporate-actions`
 

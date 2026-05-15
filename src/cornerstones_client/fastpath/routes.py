@@ -14,7 +14,7 @@ class RouteSpec:
     json_body: dict[str, Any] | None = None
 
 
-_INT_FIELDS = {"count", "bars", "bars_count", "limit", "depth", "max_expirations", "num_rows", "since_minutes"}
+_INT_FIELDS = {"count", "bars", "bars_count", "limit", "depth", "max_expirations", "num_rows", "since_minutes", "year", "quarter", "limit_per_section"}
 _FLOAT_FIELDS = {"threshold", "threshold_percentile", "min_confidence"}
 
 
@@ -513,6 +513,68 @@ def match_route(argv: Sequence[str]) -> RouteSpec | None:
             },
         )
         return None if params is None else _spec("/v1/stocks/facts", params)
+
+    if tokens[:2] == ["stocks", "transcripts"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "limit": 20},
+            allowed={"symbol", "year", "quarter", "limit", "include_text"},
+            bool_flags={"include_text"},
+        )
+        return None if params is None else _spec("/v1/stocks/transcripts", _string_true_flags(params, "include_text"))
+
+    if tokens[:2] == ["stocks", "analyst-estimates"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "period": "annual", "limit": 20},
+            allowed={"symbol", "period", "limit", "from", "to"},
+            choices={"period": {"annual", "quarter"}},
+        )
+        return None if params is None else _spec("/v1/stocks/analyst-estimates", params)
+
+    if tokens[:2] == ["stocks", "ratings"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "limit": 20},
+            allowed={"symbol", "limit", "from", "to"},
+        )
+        return None if params is None else _spec("/v1/stocks/ratings", params)
+
+    if tokens[:2] == ["stocks", "price-targets"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "limit": 20},
+            allowed={"symbol", "limit", "from", "to", "include_consensus"},
+            bool_flags={"include_consensus"},
+        )
+        return None if params is None else _spec("/v1/stocks/price-targets", _string_true_flags(params, "include_consensus"))
+
+    if tokens[:2] == ["stocks", "ratios"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "period": "annual", "limit": 20},
+            allowed={"symbol", "period", "limit"},
+            choices={"period": {"annual", "quarter", "ttm"}},
+        )
+        return None if params is None else _spec("/v1/stocks/ratios", params)
+
+    if tokens[:2] == ["stocks", "key-metrics"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "period": "annual", "limit": 20},
+            allowed={"symbol", "period", "limit"},
+            choices={"period": {"annual", "quarter", "ttm"}},
+        )
+        return None if params is None else _spec("/v1/stocks/key-metrics", params)
+
+    if tokens[:2] == ["stocks", "research-context"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "limit_per_section": 3},
+            allowed={"symbol", "sections", "limit_per_section", "include_explanations"},
+            bool_flags={"include_explanations"},
+        )
+        return None if params is None else _spec("/v1/stocks/research-context", _string_true_flags(params, "include_explanations"))
 
     if tokens[:2] == ["stocks", "optionability"]:
         params = _parse_flags(tokens[2:], defaults={"symbol": "AAPL"}, allowed={"symbol"})

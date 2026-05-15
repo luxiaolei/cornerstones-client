@@ -24,9 +24,28 @@ def test_public_docs_capture_current_access_matrix():
         "support-only ETF options proxy evidence",
         "provider-availability contract",
         "stocks facts",
+        "stocks transcripts",
+        "stocks analyst-estimates",
+        "stocks ratings",
+        "stocks price-targets",
+        "stocks ratios",
+        "stocks key-metrics",
+        "stocks research-context",
+        "stocks peers",
+        "stocks insiders",
+        "stocks etf-holdings",
+        "stocks index-constituents",
+        "stocks movers",
+        "stocks extended-hours",
+        "stock research inputs such as transcripts, analyst estimates, ratings, price targets, ratios, key metrics, peers, insider activity, ETF holdings, index constituents, movers, and extended-hours data",
         "filings --provider sec",
         "CORNERSTONES_SEC_USER_AGENT",
     ]:
         assert required in combined
 
     assert "provider credential" in combined
+
+    research_copy = "\n".join(
+        line for line in combined.splitlines() if "research" in line.lower() or "transcript" in line.lower()
+    )
+    assert "FMP" not in research_copy
