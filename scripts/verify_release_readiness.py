@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
@@ -32,18 +33,57 @@ def run(command: list[str], *, cwd: Path = ROOT) -> tuple[bool, str]:
     return completed.returncode == 0, output
 
 
-def fetch_status(url: str) -> int | None:
+def local_project_version() -> str:
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        data = tomllib.load(handle)
+    return str(data["project"]["version"])
+
+
+def _version_sort_key(version: str) -> tuple[tuple[int, object], ...]:
+    parts: list[tuple[int, object]] = []
+    for chunk in version.replace("-", ".").split("."):
+        if chunk.isdigit():
+            parts.append((0, int(chunk)))
+        else:
+            parts.append((1, chunk))
+    return tuple(parts)
+
+
+def fetch_index_record(url: str, expected_version: str) -> dict[str, object]:
     try:
         with urlopen(url, timeout=20) as response:
-            return response.status
+            payload = json.load(response)
+            releases = sorted(payload.get("releases", {}).keys(), key=_version_sort_key)
+            return {
+                "status": response.status,
+                "info_version": payload.get("info", {}).get("version"),
+                "latest_release": releases[-1] if releases else None,
+                "has_local_version": expected_version in payload.get("releases", {}),
+                "releases": releases,
+            }
     except HTTPError as exc:
-        return exc.code
-    except URLError:
-        return None
+        return {
+            "status": exc.code,
+            "info_version": None,
+            "latest_release": None,
+            "has_local_version": False,
+            "releases": [],
+            "error": str(exc),
+        }
+    except (URLError, TimeoutError, json.JSONDecodeError) as exc:
+        return {
+            "status": None,
+            "info_version": None,
+            "latest_release": None,
+            "has_local_version": False,
+            "releases": [],
+            "error": str(exc),
+        }
 
 
 def main() -> int:
     python = sys.executable
+    local_version = local_project_version()
     local_checks: dict[str, bool] = {}
     command_outputs: dict[str, str] = {}
 
@@ -75,12 +115,13 @@ def main() -> int:
     command_outputs["gh_secret_list"] = secrets_output
     github_secrets = [line.split()[0] for line in secrets_output.splitlines() if line.strip()] if secrets_ok else []
 
-    package_indices = {name: fetch_status(url) for name, url in PACKAGE_URLS.items()}
+    package_indices = {name: fetch_index_record(url, local_version) for name, url in PACKAGE_URLS.items()}
     report = evaluate_release_readiness(
         local_checks=local_checks,
         package_indices=package_indices,
         github_secrets=github_secrets,
         github_secrets_known=secrets_ok,
+        local_version=local_version,
     )
     report["command_outputs"] = command_outputs
     report["package_urls"] = PACKAGE_URLS
