@@ -4,16 +4,17 @@ This is the customer-facing product contract for the public `cornerstones-client
 
 ## Plans
 
-- Trial / no-key: discovery-only. A signed browser/trial token may read product discovery such as `/v1/features` and `/v1/changelog`; it is not a market-data key.
+- No-key public access includes selected basic market reads: FX quote and bars, crypto quote, bars, and ticker, stock symbol normalization, exchanges, quote, profile, screener, and universe, plus macro summary and calendar. No-key/trial access is not discovery-only, but signed browser/trial tokens are not API keys.
 - Free API key: 500 requests/month, 10 requests/minute. Basic authenticated market truth is allowed; charts, orderflow, Layer 5 context, options analysis, macro exact series, and event export are not Free surfaces.
 - Pro API key: 10,000 requests/month, 60 requests/minute. Adds chart artifacts, Layer 5 agent context, options chain/wall/analysis, macro exact series, and event export.
 - Max API key: custom/unlimited request ceiling. Adds orderflow raw/summary/context/historical reads and liquidity metrics.
 
 ## Surface gates
 
-- Discovery: `guide`, `changelog`, `/v1/features`, `/v1/changelog` work with a trial token or API key.
+- Discovery: `guide` and `/v1/features` expose public/optional-auth product discovery. `/v1/changelog` is admin-only; public release notes live in website/package docs.
 - Verification: `verify` / `/v1/status` requires a real issued API key.
-- Basic market truth: FX quote/bars/indicators/session, FX `fx options-proxy` support-only ETF options proxy evidence, FX `fx positioning` provider-availability contract, crypto public market reads, stock quote/profile/context-adjacent basic reads, stock `filings --provider sec` and `stocks facts` official SEC reads, bounded screener/universe workflows, and stock research inputs such as transcripts, analyst estimates, ratings, price targets, ratios, and key metrics are API-key surfaces and may fit Free quota when not explicitly premium-gated.
+- No-key basic market truth: FX quote and bars; crypto quote, bars, and ticker; stock symbol normalization, exchanges, quote, profile, screener, and universe; macro summary and calendar.
+- Issued-key basic market truth: FX indicators/session, FX `fx options-proxy` support-only ETF options proxy evidence, FX `fx positioning` provider-availability contract, authenticated crypto market depth/trades/session/indicators, stock context-adjacent reads, stock `filings --provider sec` and `stocks facts` official SEC reads, and stock research inputs such as transcripts, analyst estimates, ratings, price targets, ratios, and key metrics may fit Free quota when not explicitly premium-gated.
 - Stock research MVP A: `stocks transcripts`, `stocks analyst-estimates`, `stocks ratings`, `stocks price-targets`, `stocks ratios`, `stocks key-metrics`, and `stocks research-context` expose neutral read-only evidence surfaces.
 - Charts: `chart fx` and `chart stocks` require Pro or Max.
 - Agent context: `context fx`, `context gold`, `cross-asset` require Pro or Max.

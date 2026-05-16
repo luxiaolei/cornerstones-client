@@ -22,8 +22,9 @@ cornerstones-client auth set-api-base-url --api-base-url https://api.usecornerst
 
 ## Access matrix
 
-- Trial/no-key: discovery-only (`guide`, `changelog`, `/v1/features`, `/v1/changelog`).
-- Free API key: 500 requests/month, 10 requests/minute, basic authenticated market truth only.
+- No-key/trial access is not discovery-only: `guide`, `/v1/features`, and selected public market reads work before durable account access. `/v1/changelog` is admin-only.
+- No-key public access includes selected basic market reads: FX quote and bars; crypto quote, bars, and ticker; stock symbol normalization, exchanges, quote, profile, screener, and universe; macro summary and calendar.
+- Free API key: 500 requests/month, 10 requests/minute, starter authenticated market truth beyond the public allowlist.
 - Pro API key: adds charts, Layer 5 context, options, macro exact series, and event export.
 - Max API key: adds orderflow raw/summary/context/historical and liquidity metrics.
 
@@ -169,6 +170,8 @@ Command:
 ```bash
 cornerstones-client changelog
 ```
+
+Access: admin-only Core changelog route. Public users should use website release notes instead of treating `/v1/changelog` as no-key discovery.
 
 Example output (redacted / shape-preserving):
 
@@ -526,7 +529,7 @@ Example output (redacted / shape-preserving):
 
 ## Stocks
 
-A-share phase 1 uses existing `/v1/stocks/*` endpoints with FMP provider contracts:
+A-share phase 1 uses existing `/v1/stocks/*` endpoints with exchange-aware stock contracts:
 
 - Shanghai A-shares: symbol suffix `.SS`, screener exchange `SHH` (example `600519.SS`).
 - Shenzhen A-shares: symbol suffix `.SZ`, screener exchange `SHZ` (example `000001.SZ`).
@@ -546,7 +549,7 @@ cornerstones-client stocks quote --symbol 000001.SZ
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"AAPL","price":214.7,"currency":"USD","degraded":false,"provenance":"ib"}
+{"symbol":"AAPL","price":214.7,"currency":"USD","degraded":false,"provenance":"core"}
 ```
 
 ### `stocks profile`

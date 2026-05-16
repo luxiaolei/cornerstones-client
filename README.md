@@ -15,12 +15,12 @@ python -m pip install -U cornerstones-client==0.1.19
 Requirements:
 
 - Python `>=3.11`
-- browser trial token or issued Cornerstones API key for authenticated data
+- network access to the hosted Core API for no-key public/basic reads, plus an issued Cornerstones API key for verification, Free quota, and premium surfaces
 - network access to `https://api.usecornerstones.com`
 
 ## Access matrix
 
-Trial/no-key access is discovery-only: `guide` and `changelog` can use a signed discovery token, but `verify` and market-data reads require a real issued API key. Free keys are limited to **500 requests/month** and **10 requests/minute**. Charts require **Pro+**. Orderflow requires **Max**. See `docs/ACCESS_MATRIX.md` for the canonical customer-facing matrix.
+No-key public access includes selected basic market reads. No-key/trial access is not discovery-only: `guide` plus selected public market reads work before durable account access, while `verify` / `/v1/status` requires a real issued API key and `/v1/changelog` is admin-only. Free keys are limited to **500 requests/month** and **10 requests/minute**. Charts require **Pro+**. Orderflow requires **Max**. See `docs/ACCESS_MATRIX.md` for the canonical customer-facing matrix.
 
 ## Login
 
@@ -282,6 +282,8 @@ Command:
 ```bash
 cornerstones-client changelog
 ```
+
+Access: admin-only Core changelog route. Public users should use website release notes instead of treating `/v1/changelog` as no-key discovery.
 
 Example output (redacted / shape-preserving):
 
@@ -650,7 +652,7 @@ cornerstones-client stocks quote --symbol AAPL
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"AAPL","price":214.7,"currency":"USD","degraded":false,"provenance":"ib"}
+{"symbol":"AAPL","price":214.7,"currency":"USD","degraded":false,"provenance":"core"}
 ```
 
 ### `stocks profile`

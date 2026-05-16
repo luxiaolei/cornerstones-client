@@ -11,7 +11,9 @@ def test_public_docs_capture_current_access_matrix():
     ])
 
     for required in [
-        "discovery-only",
+        "No-key public access includes selected basic market reads",
+        "No-key/trial access is not discovery-only",
+        "`/v1/changelog` is admin-only",
         "500 requests/month",
         "10 requests/minute",
         "Charts require **Pro+**",
