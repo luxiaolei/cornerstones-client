@@ -664,7 +664,7 @@ def main() -> None:
     fx_session.add_argument("--timeframe", default="H1")
     fx_session.add_argument("--bars", type=int, default=200)
     fx_session.set_defaults(func=cmd_fx)
-    fx_options_proxy = fx_sub.add_parser("options-proxy", help="Fetch support-only ETF options proxy evidence for an FX pair; no trade signal or submit authority")
+    fx_options_proxy = fx_sub.add_parser("options-proxy", help="Fetch ETF options proxy data facts for an FX pair; downstream agents decide usage")
     fx_options_proxy.add_argument("--symbol", required=True)
     fx_options_proxy.set_defaults(func=cmd_fx)
     fx_positioning = fx_sub.add_parser("positioning", help="Fetch FX positioning provider-availability contract")
@@ -689,14 +689,14 @@ def main() -> None:
     context_stocks.add_argument("--count", type=int, default=5)
     context_stocks.set_defaults(func=cmd_context)
 
-    orderflow_parser = sub.add_parser("orderflow", help="Read authenticated order-flow surfaces")
+    orderflow_parser = sub.add_parser("orderflow", help="Read authenticated order-flow data-contract surfaces")
     orderflow_sub = orderflow_parser.add_subparsers(dest="orderflow_cmd", required=True)
     for name, help_text in [
-        ("summary", "Fetch order-flow summary"),
-        ("context", "Fetch order-flow context"),
-        ("raw", "Fetch raw/latest order-flow payload"),
-        ("historical", "Fetch historical order-flow payload"),
-        ("liquidity-metrics", "Fetch order-flow liquidity metrics"),
+        ("summary", "Fetch order-flow data summary"),
+        ("context", "Fetch order-flow data context"),
+        ("raw", "Fetch raw/latest order-flow data payload"),
+        ("historical", "Fetch historical order-flow data payload"),
+        ("liquidity-metrics", "Fetch order-flow liquidity metrics data contract"),
     ]:
         orderflow_cmd = orderflow_sub.add_parser(name, help=help_text)
         orderflow_cmd.add_argument("--symbol", help="Instrument symbol, e.g. XAUUSD")

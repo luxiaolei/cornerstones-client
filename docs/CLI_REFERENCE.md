@@ -1,11 +1,11 @@
 # Cornerstones Client CLI Reference
 
-Machine-readable customer CLI reference for `cornerstones-client==0.1.19`.
+Machine-readable customer CLI reference for `cornerstones-client==0.1.20`.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.19
+python -m pip install -U cornerstones-client==0.1.20
 ```
 
 ## Auth/config
@@ -264,7 +264,7 @@ cornerstones-client fx options-proxy --symbol EURUSD
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"EURUSD","proxy":true,"experimental":true,"proxy_symbols":["FXE"],"proxy_formula":"FXE ETF options as support-only EURUSD volatility proxy; not OTC FX options truth","trust_tier":"support","usage_hint":"support_input","primary_input_allowed":false,"native_otc_fx_options_available":false,"components":[{"proxy_symbol":"FXE","role":"euro_etf_options","analysis":{},"degraded":false}],"provenance":"options_service","degraded":false,"data_quality":{"support_only":true,"component_count":1}}
+{"symbol":"EURUSD","proxy":true,"experimental":true,"proxy_symbols":["FXE"],"proxy_formula":"FXE ETF options as EURUSD volatility proxy; not OTC FX options truth","native_otc_fx_options_available":false,"components":[{"proxy_symbol":"FXE","role":"euro_etf_options","analysis":{},"degraded":false}],"provenance":"options_service","degraded":false,"data_quality":{"proxy_evidence_only":true,"component_count":1}}
 ```
 
 ### `fx positioning`
@@ -278,7 +278,7 @@ cornerstones-client fx positioning --symbol EURUSD
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"EURUSD","proxy":true,"experimental":true,"trust_tier":"shadow","usage_hint":"shadow_only","primary_input_allowed":false,"components":{"cot":{"available":false,"status":"provider_missing","usage_hint":"do_not_use"},"futures_oi":{"available":false,"status":"provider_missing","usage_hint":"do_not_use"},"retail_positioning":{"available":false,"status":"provider_missing","usage_hint":"do_not_use"},"broker_flow":{"available":false,"status":"provider_missing","usage_hint":"do_not_use"}},"provenance":"none","degraded":false,"fallback":"positioning_providers_missing","data_quality":{"neutral_positioning_inferred":false}}
+{"symbol":"EURUSD","proxy":true,"experimental":true,"components":{"cot":{"available":false,"status":"provider_missing"},"futures_oi":{"available":false,"status":"provider_missing"},"retail_positioning":{"available":false,"status":"provider_missing"},"broker_flow":{"available":false,"status":"provider_missing"}},"provenance":"none","degraded":false,"fallback":"positioning_providers_missing","data_quality":{"neutral_positioning_inferred":false}}
 ```
 
 ## Context
@@ -338,7 +338,7 @@ cornerstones-client orderflow summary --symbol XAUUSD
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"XAUUSD","summary":{"bias":"neutral","liquidity_score":0.62},"degraded":false}
+{"symbol":"XAUUSD","summary":{"book_pressure_direction":"neutral"},"raw_observations":{},"derived_features":{},"readiness":{"data_contract_ready":true},"degraded":false}
 ```
 
 ### `orderflow context`
@@ -352,7 +352,7 @@ cornerstones-client orderflow context --symbol XAUUSD
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"XAUUSD","context":{"delta":{},"liquidity":{}},"degraded":false}
+{"symbol":"XAUUSD","orderflow_context":{"state":"balanced"},"raw_observations":{},"derived_features":{},"readiness":{"data_contract_ready":true},"degraded":false}
 ```
 
 ### `orderflow raw`
@@ -366,7 +366,7 @@ cornerstones-client orderflow raw --symbol XAUUSD
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"XAUUSD","snapshot":{"bids":[],"asks":[]},"degraded":false}
+{"symbol":"XAUUSD","market_data":{"bids":[],"asks":[]},"data_quality_status":"ok","degraded":false}
 ```
 
 ### `orderflow historical`
@@ -394,7 +394,7 @@ cornerstones-client orderflow liquidity-metrics --symbol XAUUSD
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"XAUUSD","liquidity_metrics":{"spread":0.2,"depth_score":0.71},"degraded":false}
+{"symbol":"XAUUSD","metrics":{"spread":0.2,"breakout_acceptance_score":0.65},"readiness":{"data_contract_ready":true},"degraded":false}
 ```
 
 ## Chart
