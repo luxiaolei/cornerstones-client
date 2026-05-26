@@ -29,6 +29,29 @@ cornerstones-client auth login --api-key <issued-api-key>
 cornerstones-client verify
 ```
 
+## Typed Python client
+
+Use `CornerstonesClient` when code needs typed, shape-preserving access to customer-safe read surfaces:
+
+```python
+import os
+
+from cornerstones_client import CornerstonesClient
+
+client = CornerstonesClient(api_key=os.environ["CORNERSTONES_API_KEY"])
+
+bars = client.fx.bars("XAUUSD", timeframe="M15", bars=128)
+levels = client.fx.levels("XAUUSD")
+opening_range = client.fx.opening_range("XAUUSD", session="london", minutes=30)
+price_action = client.fx.price_action("XAUUSD", timeframe="H1", bars=120)
+volume_profile = client.fx.volume_profile("XAUUSD", timeframe="15m", basis="gc_futures")
+event_window = client.macro.event_window("XAUUSD", currency="USD", importance="high")
+```
+
+Typed wrappers preserve Core contract metadata: `as_of`, `freshness_status`, `degraded`, `fallback`, and `provenance`; XAU volume-profile wrappers also preserve `proxy`, `source_symbol`, `basis`, and `profile_quality`. Use `.to_dict()` for full raw payload access, including future fields.
+
+Safety boundary: these methods expose read-only market structure and macro context only. They grant no trading recommendation, account, risk, or execution permissions. XAU volume profile is a GC futures proxy, not spot centralized volume.
+
 Do not paste real keys into shared logs. For webhook signing secrets, use env vars:
 
 ```bash
