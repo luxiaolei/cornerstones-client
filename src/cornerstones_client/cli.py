@@ -366,6 +366,22 @@ def cmd_fx(args: argparse.Namespace) -> None:
         params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "bars": args.bars})
         _print(_authenticated_get("/v1/fx/session", params=params, error="fx_session_failed"))
         return
+    if args.fx_cmd == "levels":
+        params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "bars": args.bars})
+        _print(_authenticated_get("/v1/fx/levels", params=params, error="fx_levels_failed"))
+        return
+    if args.fx_cmd == "opening-range":
+        params = _compact_params({"symbol": args.symbol, "session": args.session, "minutes": args.minutes, "timeframe": args.timeframe, "bars": args.bars})
+        _print(_authenticated_get("/v1/fx/opening-range", params=params, error="fx_opening_range_failed"))
+        return
+    if args.fx_cmd == "price-action":
+        params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "bars": args.bars})
+        _print(_authenticated_get("/v1/fx/price-action", params=params, error="fx_price_action_failed"))
+        return
+    if args.fx_cmd == "volume-profile":
+        params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "basis": args.basis})
+        _print(_authenticated_get("/v1/fx/volume-profile", params=params, error="fx_volume_profile_failed"))
+        return
     if args.fx_cmd == "options-proxy":
         params = _compact_params({"symbol": args.symbol})
         _print(_authenticated_get("/v1/fx/options-proxy", params=params, error="fx_options_proxy_failed"))
@@ -476,11 +492,18 @@ def cmd_options(args: argparse.Namespace) -> None:
 
 
 def cmd_macro(args: argparse.Namespace) -> None:
-    routes = {"summary": "/v1/macro/summary", "calendar": "/v1/macro/calendar", "series": "/v1/macro/series", "yields": "/v1/macro/yields"}
+    routes = {
+        "summary": "/v1/macro/summary",
+        "calendar": "/v1/macro/calendar",
+        "series": "/v1/macro/series",
+        "yields": "/v1/macro/yields",
+        "event-window": "/v1/macro/event-window",
+    }
     params = _compact_params({
         "name": getattr(args, "name", None), "from": getattr(args, "from_date", None), "to": getattr(args, "to_date", None),
         "from_date": getattr(args, "from_date", None), "to_date": getattr(args, "to_date", None), "country": getattr(args, "country", None),
         "currency": getattr(args, "currency", None), "importance": getattr(args, "importance", None), "category": getattr(args, "category", None),
+        "symbol": getattr(args, "symbol", None), "lookback_minutes": getattr(args, "lookback_minutes", None), "lookahead_minutes": getattr(args, "lookahead_minutes", None),
     })
     getter = _public_get if args.macro_cmd in {"summary", "calendar"} else _authenticated_get
     _print(getter(routes[args.macro_cmd], params=params, error="macro_request_failed"))
@@ -644,30 +667,68 @@ def main() -> None:
     alerts_delete.add_argument("--yes", action="store_true", help="Confirm customer subscription deletion")
     alerts_delete.set_defaults(func=cmd_alerts)
 
-    fx_parser = sub.add_parser("fx", help="Read authenticated FX currency-pair surfaces")
+    fx_parser = sub.add_parser("fx", help="Read FX currency-pair surfaces: [Layer 1] market truth + [Layer 2] objective structure")
     fx_sub = fx_parser.add_subparsers(dest="fx_cmd", required=True)
-    fx_quote = fx_sub.add_parser("quote", help="Fetch latest FX/currency-pair quote")
+    fx_quote = fx_sub.add_parser("quote", help="[Layer 1] Fetch latest FX/currency-pair quote")
     fx_quote.add_argument("--symbol", required=True, help="Currency pair or metal pair, e.g. EURUSD or XAUUSD")
     fx_quote.set_defaults(func=cmd_fx)
-    fx_bars = fx_sub.add_parser("bars", help="Fetch FX/currency-pair bars")
+    fx_bars = fx_sub.add_parser("bars", help="[Layer 1] Fetch provider-backed FX/currency-pair OHLCV bars")
     fx_bars.add_argument("--symbol", required=True)
     fx_bars.add_argument("--timeframe", default="1h")
-    fx_bars.add_argument("--count", type=int, default=10)
+    fx_bars.add_argument("--count", "--bars", dest="count", type=int, default=10, help="Number of bars; --bars is Core-compatible alias")
     fx_bars.set_defaults(func=cmd_fx)
-    fx_indicators = fx_sub.add_parser("indicators", help="Fetch FX/currency-pair indicators")
+    fx_indicators = fx_sub.add_parser("indicators", help="[Layer 1] Fetch deterministic FX/currency-pair indicators")
     fx_indicators.add_argument("--symbol", required=True)
     fx_indicators.add_argument("--timeframe", default="H1")
     fx_indicators.add_argument("--bars", type=int, default=200)
     fx_indicators.set_defaults(func=cmd_fx)
-    fx_session = fx_sub.add_parser("session", help="Fetch FX/currency-pair session summary")
+    fx_session = fx_sub.add_parser("session", help="[Layer 1] Fetch deterministic FX/currency-pair session summary")
     fx_session.add_argument("--symbol", required=True)
     fx_session.add_argument("--timeframe", default="H1")
     fx_session.add_argument("--bars", type=int, default=200)
     fx_session.set_defaults(func=cmd_fx)
-    fx_options_proxy = fx_sub.add_parser("options-proxy", help="Fetch ETF options proxy data facts for an FX pair; downstream agents decide usage")
+    fx_levels = fx_sub.add_parser(
+        "levels",
+        help="[Layer 2] Fetch objective intraday prior/current/session levels from recent bars",
+        description="Layer 2 objective FX prior/current/session level evidence from recent bars. No trade signal, entry/exit, or trading recommendation.",
+    )
+    fx_levels.add_argument("--symbol", required=True)
+    fx_levels.add_argument("--timeframe", default="5m")
+    fx_levels.add_argument("--bars", type=int, default=600)
+    fx_levels.set_defaults(func=cmd_fx)
+    fx_opening_range = fx_sub.add_parser(
+        "opening-range",
+        help="[Layer 2] Fetch objective opening-range state; no trading recommendation",
+        description="Layer 2 opening-range evidence. No trading recommendation.",
+    )
+    fx_opening_range.add_argument("--symbol", required=True)
+    fx_opening_range.add_argument("--session", default="london", choices=["asia", "london", "new_york", "new-york"])
+    fx_opening_range.add_argument("--minutes", type=int, default=30)
+    fx_opening_range.add_argument("--timeframe", default="5m")
+    fx_opening_range.add_argument("--bars", type=int, default=600)
+    fx_opening_range.set_defaults(func=cmd_fx)
+    fx_price_action = fx_sub.add_parser(
+        "price-action",
+        help="[Layer 2] Fetch objective price-action structure; no signal/recommendation fields",
+        description="Layer 2 price-action structure. No signal/recommendation fields.",
+    )
+    fx_price_action.add_argument("--symbol", required=True)
+    fx_price_action.add_argument("--timeframe", default="H1")
+    fx_price_action.add_argument("--bars", type=int, default=120)
+    fx_price_action.set_defaults(func=cmd_fx)
+    fx_volume_profile = fx_sub.add_parser(
+        "volume-profile",
+        help="[Layer 2] Fetch XAUUSD GC futures orderflow proxy volume profile; not centralized spot volume",
+        description="Fetch XAUUSD volume profile from GC futures orderflow proxy buckets. Use provenance, profile_quality, degraded, and fallback before consuming POC/VAH/VAL. No trading recommendation.",
+    )
+    fx_volume_profile.add_argument("--symbol", default="XAUUSD", help="Supported symbol: XAUUSD")
+    fx_volume_profile.add_argument("--timeframe", default="15m", choices=["15m", "30m", "1h", "M15", "M30", "H1"], help="Aggregation window over GC proxy buckets")
+    fx_volume_profile.add_argument("--basis", default="gc_futures", choices=["gc_futures", "gc_futures_orderflow_proxy"], help="Proxy basis; POC/VAH/VAL are conditional on profile_quality")
+    fx_volume_profile.set_defaults(func=cmd_fx)
+    fx_options_proxy = fx_sub.add_parser("options-proxy", help="[Layer 2] Fetch ETF options proxy data facts for an FX pair; downstream agents decide usage")
     fx_options_proxy.add_argument("--symbol", required=True)
     fx_options_proxy.set_defaults(func=cmd_fx)
-    fx_positioning = fx_sub.add_parser("positioning", help="Fetch FX positioning provider-availability contract")
+    fx_positioning = fx_sub.add_parser("positioning", help="[Layer 2] Fetch FX positioning provider-availability contract")
     fx_positioning.add_argument("--symbol", required=True)
     fx_positioning.set_defaults(func=cmd_fx)
 
@@ -844,12 +905,28 @@ def main() -> None:
     c.add_argument("--threshold", "--threshold-percentile", dest="threshold_percentile", type=float, default=90.0, help="Open-interest wall percentile threshold")
     c.set_defaults(func=cmd_options)
 
-    macro_parser = sub.add_parser("macro", help="Read authenticated macro surfaces")
+    macro_parser = sub.add_parser("macro", help="Read macro surfaces: [Layer 3] intelligence/economic context")
     macro_sub = macro_parser.add_subparsers(dest="macro_cmd", required=True)
-    for name in ["summary", "yields"]:
-        c = macro_sub.add_parser(name); c.set_defaults(func=cmd_macro)
-    c = macro_sub.add_parser("series"); c.add_argument("--name", required=True); c.set_defaults(func=cmd_macro)
-    c = macro_sub.add_parser("calendar"); c.add_argument("--from", dest="from_date"); c.add_argument("--to", dest="to_date"); c.add_argument("--country"); c.add_argument("--currency"); c.add_argument("--importance"); c.add_argument("--category"); c.set_defaults(func=cmd_macro)
+    c = macro_sub.add_parser("summary", help="[Layer 3] Fetch macro summary")
+    c.set_defaults(func=cmd_macro)
+    c = macro_sub.add_parser("yields", help="[Layer 3] Fetch treasury yield curve")
+    c.set_defaults(func=cmd_macro)
+    c = macro_sub.add_parser("series", help="[Layer 3] Fetch exact-semantic macro series")
+    c.add_argument("--name", required=True)
+    c.set_defaults(func=cmd_macro)
+    c = macro_sub.add_parser("calendar", help="[Layer 3] Fetch FMP-backed macro calendar with normalized filters")
+    c.add_argument("--from", dest="from_date"); c.add_argument("--to", dest="to_date"); c.add_argument("--country"); c.add_argument("--currency"); c.add_argument("--importance", choices=["low", "medium", "high"]); c.add_argument("--category"); c.set_defaults(func=cmd_macro)
+    c = macro_sub.add_parser(
+        "event-window",
+        help="[Layer 3] Fetch objective scheduled macro event window; no execution recommendation",
+        description="Fetch objective scheduled macro event window evidence. Response uses event_window_state, blackout_suggestion, provenance, degraded, and fallback; no trading recommendation.",
+    )
+    c.add_argument("--symbol", required=True)
+    c.add_argument("--currency")
+    c.add_argument("--lookback-minutes", type=int, default=60)
+    c.add_argument("--lookahead-minutes", type=int, default=240)
+    c.add_argument("--importance", choices=["low", "medium", "high"])
+    c.set_defaults(func=cmd_macro)
 
     geopolitics_parser = sub.add_parser("geopolitics", help="Read authenticated geopolitics/OSINT surfaces")
     geopolitics_sub = geopolitics_parser.add_subparsers(dest="geopolitics_cmd", required=True)

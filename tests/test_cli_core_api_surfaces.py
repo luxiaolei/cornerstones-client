@@ -111,12 +111,47 @@ def test_public_commands_do_not_require_saved_api_key(monkeypatch, capsys):
     assert params == {}
 
 
+def test_macro_event_window_command_hits_authenticated_event_window_surface(monkeypatch, capsys):
+    _run(monkeypatch, capsys, [
+        "macro", "event-window", "--symbol", "XAUUSD", "--currency", "USD", "--importance", "high", "--lookback-minutes", "60", "--lookahead-minutes", "240",
+    ])
+
+    _method, url, headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/macro/event-window"
+    assert headers["Authorization"] == "Bearer ck_test"
+    assert params == {
+        "symbol": "XAUUSD",
+        "currency": "USD",
+        "importance": "high",
+        "lookback_minutes": 60,
+        "lookahead_minutes": 240,
+    }
+
+
 def test_fx_indicators_command_hits_currency_pair_indicators_surface(monkeypatch, capsys):
     _run(monkeypatch, capsys, ["fx", "indicators", "--symbol", "USDJPY", "--timeframe", "H1", "--bars", "50"])
 
     _method, url, _headers, params = _FakeClient.calls[-1]
     assert url == "http://api.test/v1/fx/indicators"
     assert params == {"symbol": "USDJPY", "timeframe": "H1", "bars": 50}
+
+
+@pytest.mark.parametrize(
+    ("argv", "route", "params"),
+    [
+        (["fx", "levels", "--symbol", "EURUSD", "--timeframe", "5m", "--bars", "600"], "/v1/fx/levels", {"symbol": "EURUSD", "timeframe": "5m", "bars": 600}),
+        (["fx", "opening-range", "--symbol", "EURUSD", "--session", "london", "--minutes", "30", "--timeframe", "5m", "--bars", "600"], "/v1/fx/opening-range", {"symbol": "EURUSD", "session": "london", "minutes": 30, "timeframe": "5m", "bars": 600}),
+        (["fx", "price-action", "--symbol", "XAUUSD", "--timeframe", "H1", "--bars", "120"], "/v1/fx/price-action", {"symbol": "XAUUSD", "timeframe": "H1", "bars": 120}),
+        (["fx", "volume-profile", "--symbol", "XAUUSD", "--timeframe", "15m", "--basis", "gc_futures"], "/v1/fx/volume-profile", {"symbol": "XAUUSD", "timeframe": "15m", "basis": "gc_futures"}),
+    ],
+)
+def test_fx_structure_commands_hit_objective_structure_surfaces(monkeypatch, capsys, argv, route, params):
+    _run(monkeypatch, capsys, argv)
+
+    _method, url, headers, actual_params = _FakeClient.calls[-1]
+    assert url == f"http://api.test{route}"
+    assert headers["Authorization"] == "Bearer ck_test"
+    assert actual_params == params
 
 
 def test_fx_options_proxy_command_hits_options_proxy_data_surface(monkeypatch, capsys):

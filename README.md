@@ -81,6 +81,10 @@ cornerstones-client alerts subscribe \
 - `fx bars`
 - `fx indicators`
 - `fx session`
+- `fx levels`
+- `fx opening-range`
+- `fx price-action`
+- `fx volume-profile`
 - `fx options-proxy`
 - `fx positioning`
 - `context fx`
@@ -132,6 +136,7 @@ cornerstones-client alerts subscribe \
 - `macro yields`
 - `macro series`
 - `macro calendar`
+- `macro event-window`
 - `geopolitics context`
 - `geopolitics status`
 - `geopolitics watchlist`
@@ -388,6 +393,64 @@ Example output (redacted / shape-preserving):
 ```json
 {"symbol":"XAUUSD","session":"london","range":{"high":2348.2,"low":2339.1},"degraded":false}
 ```
+
+### `fx levels`
+
+Command:
+
+```bash
+cornerstones-client fx levels --symbol EURUSD --timeframe 5m --bars 600
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"EURUSD","timeframe":"5m","levels":{"previous_day_high":1.1620,"session_low":1.1588},"provenance":"fx_bars","degraded":false}
+```
+
+### `fx opening-range`
+
+Command:
+
+```bash
+cornerstones-client fx opening-range --symbol EURUSD --session london --minutes 30
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"EURUSD","session":"london","minutes":30,"opening_range":{"high":1.1618,"low":1.1599},"degraded":false}
+```
+
+### `fx price-action`
+
+Command:
+
+```bash
+cornerstones-client fx price-action --symbol XAUUSD --timeframe H1 --bars 120
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","timeframe":"H1","structure":{"trend":"range","last_swing":"higher_low"},"degraded":false}
+```
+
+### `fx volume-profile`
+
+Command:
+
+```bash
+cornerstones-client fx volume-profile --symbol XAUUSD --timeframe 15m --basis gc_futures
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","source_symbol":"GC","basis":"gc_futures","proxy":true,"profile_quality":"usable","poc":2350.5,"vah":2356.0,"val":2344.0,"provenance":"gc_futures_orderflow_proxy","degraded":false}
+```
+
+Note: this is GC futures orderflow proxy evidence for XAUUSD, not centralized spot volume. Use `profile_quality`, `degraded`, and `fallback` before consuming POC/VAH/VAL.
 
 ### `fx options-proxy`
 
@@ -1024,6 +1087,22 @@ Example output (redacted / shape-preserving):
 ```json
 {"count":3,"events":[{"time":"2026-04-30T12:30:00Z","country":"US","event":"GDP","importance":"high"}]}
 ```
+
+### `macro event-window`
+
+Command:
+
+```bash
+cornerstones-client macro event-window --symbol XAUUSD --currency USD --importance high --lookback-minutes 60 --lookahead-minutes 240
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","currency":"USD","event_window_state":"near_high_importance_event","blackout_suggestion":"caution","events":[{"event":"FOMC","importance":"high"}],"provenance":"fmp","degraded":false}
+```
+
+Note: macro event windows are objective risk-context evidence only. They are not execution recommendations.
 
 ## Geopolitics / OSINT
 
