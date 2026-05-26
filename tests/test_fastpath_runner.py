@@ -26,6 +26,7 @@ def test_fastpath_route_mapping_covers_phase1_surfaces():
         (["cross-asset", "context"], "GET", "/v1/cross-asset/context", {}, True, None),
         (["stocks", "quote", "--symbol", "GLD"], "GET", "/v1/stocks/quote", {"symbol": "GLD"}, True, None),
         (["stocks", "context", "--symbol", "GLD", "--bars-count", "3"], "GET", "/v1/stocks/context", {"symbol": "GLD", "bars_count": 3}, True, None),
+        (["stocks", "imbalance-window", "--symbol", "AAPL", "--exchange", "NYSE", "--window-minutes", "30"], "GET", "/v1/stocks/imbalance-window", {"symbol": "AAPL", "exchange": "NYSE", "window_minutes": 30}, True, None),
         (["stocks", "filings", "--symbol", "AAPL", "--provider", "sec", "--form", "10-K", "--limit", "2"], "GET", "/v1/stocks/filings", {"symbol": "AAPL", "provider": "sec", "form": "10-K", "limit": 2}, True, None),
         (["stocks", "facts", "--symbol", "AAPL", "--period", "annual", "--limit", "4"], "GET", "/v1/stocks/facts", {"symbol": "AAPL", "provider": "sec", "period": "annual", "limit": 4}, True, None),
         (["stocks", "transcripts", "--symbol", "AAPL", "--year", "2025", "--quarter", "4", "--limit", "1", "--include-text"], "GET", "/v1/stocks/transcripts", {"symbol": "AAPL", "year": 2025, "quarter": 4, "limit": 1, "include_text": "true"}, True, None),

@@ -14,7 +14,7 @@ class RouteSpec:
     json_body: dict[str, Any] | None = None
 
 
-_INT_FIELDS = {"count", "bars", "bars_count", "limit", "depth", "max_expirations", "num_rows", "since_minutes", "year", "quarter", "limit_per_section"}
+_INT_FIELDS = {"count", "bars", "bars_count", "limit", "depth", "max_expirations", "num_rows", "since_minutes", "window_minutes", "year", "quarter", "limit_per_section"}
 _FLOAT_FIELDS = {"threshold", "threshold_percentile", "min_confidence"}
 
 
@@ -492,6 +492,14 @@ def match_route(argv: Sequence[str]) -> RouteSpec | None:
             allowed={"symbol", "bars_count"},
         )
         return None if params is None else _spec("/v1/stocks/context", params)
+
+    if tokens[:2] == ["stocks", "imbalance-window"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "exchange": "NYSE", "window_minutes": 30},
+            allowed={"symbol", "exchange", "window_minutes"},
+        )
+        return None if params is None else _spec("/v1/stocks/imbalance-window", params, timeout=60.0)
 
     if tokens[:2] == ["stocks", "filings"]:
         params = _parse_flags(

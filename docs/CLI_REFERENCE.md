@@ -1,11 +1,11 @@
 # Cornerstones Client CLI Reference
 
-Machine-readable customer CLI reference for `cornerstones-client==0.1.20`.
+Machine-readable customer CLI reference for `cornerstones-client==0.1.21`.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.20
+python -m pip install -U cornerstones-client==0.1.21
 ```
 
 ## Auth/config
@@ -676,8 +676,24 @@ cornerstones-client stocks imbalance --symbol AAPL --exchange NYSE
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"AAPL","exchange":"NYSE","imbalance":null,"degraded":false,"available":false}
+{"symbol":"AAPL","exchange":"NYSE","imbalance_quantity":1200,"raw_observation":{"provider":"market_data_provider","exchange":"NYSE"},"derived_features":{"signed_imbalance_quantity":1200,"pressure_direction":"buy_pressure"},"data_quality":{"field_maturity":"snapshot_only"},"readiness":{"data_contract_ready":true},"degraded":false}
 ```
+
+### `stocks imbalance-window`
+
+Command:
+
+```bash
+cornerstones-client stocks imbalance-window --symbol AAPL --exchange NYSE --window-minutes 30
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","exchange":"NYSE","window_minutes":30,"sample_count":3,"observations":[{"as_of":"2026-05-26T13:30:00Z","imbalance_side":"buy","imbalance_quantity":1200}],"trend_features":{"side_transitions":0,"max_imbalance_quantity":1200,"signed_imbalance_change":0},"data_quality":{"field_maturity":"rolling_window","retention_mode":"in_memory"},"readiness":{"data_contract_ready":true},"degraded":false}
+```
+
+`stocks imbalance-window` exposes auction imbalance rolling window facts only: raw observations, derived numeric features, data quality, and data-contract readiness. It does not provide trade signals or production/trading authority.
 
 ### `stocks tick`
 

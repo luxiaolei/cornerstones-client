@@ -438,7 +438,7 @@ def cmd_stocks(args: argparse.Namespace) -> None:
     routes = {
         "quote": "/v1/stocks/quote", "profile": "/v1/stocks/profile", "context": "/v1/stocks/context",
         "indicators": "/v1/stocks/indicators", "session": "/v1/stocks/session", "depth": "/v1/stocks/depth",
-        "imbalance": "/v1/stocks/imbalance", "tick": "/v1/stocks/tick", "optionability": "/v1/stocks/optionability",
+        "imbalance": "/v1/stocks/imbalance", "imbalance-window": "/v1/stocks/imbalance-window", "tick": "/v1/stocks/tick", "optionability": "/v1/stocks/optionability",
         "earnings": "/v1/stocks/earnings", "filings": "/v1/stocks/filings", "facts": "/v1/stocks/facts", "corporate-actions": "/v1/stocks/corporate-actions",
         "transcripts": "/v1/stocks/transcripts", "analyst-estimates": "/v1/stocks/analyst-estimates", "ratings": "/v1/stocks/ratings",
         "price-targets": "/v1/stocks/price-targets", "ratios": "/v1/stocks/ratios", "key-metrics": "/v1/stocks/key-metrics",
@@ -449,7 +449,7 @@ def cmd_stocks(args: argparse.Namespace) -> None:
     params = _compact_params({
         "symbol": getattr(args, "symbol", None), "timeframe": getattr(args, "timeframe", None), "bars": getattr(args, "bars", None),
         "bars_count": getattr(args, "bars_count", None), "num_rows": getattr(args, "num_rows", None), "exchange": getattr(args, "exchange", None),
-        "tick_type": getattr(args, "tick_type", None), "num_ticks": getattr(args, "num_ticks", None), "from": getattr(args, "from_date", None),
+        "window_minutes": getattr(args, "window_minutes", None), "tick_type": getattr(args, "tick_type", None), "num_ticks": getattr(args, "num_ticks", None), "from": getattr(args, "from_date", None),
         "to": getattr(args, "to_date", None), "status": getattr(args, "status", None), "provider": getattr(args, "provider", None), "form": getattr(args, "form", None), "period": getattr(args, "period", None),
         "type": getattr(args, "type", None), "limit": getattr(args, "limit", None), "preset": getattr(args, "preset", None),
         "year": getattr(args, "year", None), "quarter": getattr(args, "quarter", None), "include_text": getattr(args, "include_text", None),
@@ -758,7 +758,10 @@ def main() -> None:
     for name in ["indicators", "session"]:
         c = stocks_sub.add_parser(name); c.add_argument("--symbol", required=True); c.add_argument("--timeframe", default="1d"); c.add_argument("--bars", type=int, default=200 if name == "indicators" else 252); c.set_defaults(func=cmd_stocks)
     c = stocks_sub.add_parser("depth"); c.add_argument("--symbol", required=True); c.add_argument("--num-rows", type=int, default=5); c.set_defaults(func=cmd_stocks)
-    c = stocks_sub.add_parser("imbalance"); c.add_argument("--symbol", required=True); c.add_argument("--exchange", default="NYSE"); c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("imbalance", help="Fetch auction imbalance snapshot")
+    c.add_argument("--symbol", required=True); c.add_argument("--exchange", default="NYSE"); c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("imbalance-window", help="Fetch auction imbalance rolling window facts")
+    c.add_argument("--symbol", required=True); c.add_argument("--exchange", default="NYSE"); c.add_argument("--window-minutes", type=int, default=30); c.set_defaults(func=cmd_stocks)
     c = stocks_sub.add_parser("tick"); c.add_argument("--symbol", required=True); c.add_argument("--tick-type", default="Last"); c.add_argument("--num-ticks", type=int, default=100); c.set_defaults(func=cmd_stocks)
     for name in ["earnings", "filings", "corporate-actions"]:
         c = stocks_sub.add_parser(name); c.add_argument("--symbol", required=True); c.add_argument("--from", dest="from_date"); c.add_argument("--to", dest="to_date")

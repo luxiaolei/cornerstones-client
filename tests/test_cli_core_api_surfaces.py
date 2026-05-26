@@ -326,8 +326,16 @@ def test_subscription_mutations_require_yes(monkeypatch, capsys):
     assert _FakeClient.calls == []
 
 
+def test_stocks_imbalance_window_command_hits_window_surface(monkeypatch, capsys):
+    _run(monkeypatch, capsys, ["stocks", "imbalance-window", "--symbol", "AAPL", "--exchange", "NYSE", "--window-minutes", "30"])
+
+    _method, url, _headers, params = _FakeClient.calls[-1]
+    assert url == "http://api.test/v1/stocks/imbalance-window"
+    assert params == {"symbol": "AAPL", "exchange": "NYSE", "window_minutes": 30}
+
+
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.20"
+    assert __version__ == "0.1.21"
 
 
 def test_options_chain_command_maps_truth_surface_params(monkeypatch, capsys):

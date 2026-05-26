@@ -4,6 +4,11 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.21
+
+- Added client/API parity for `stocks imbalance-window`, an authenticated stock auction imbalance rolling window surface with objective observations, trend features, data quality, and data-contract readiness.
+- Updated stock imbalance documentation to the enriched data-facts contract and kept trading/production authority out of public client examples.
+
 ## 0.1.18
 
 - Added stock research fast-path/client parity for transcripts, analyst estimates, ratings, price targets, ratios, key metrics, and research context.
