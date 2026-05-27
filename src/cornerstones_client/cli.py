@@ -475,7 +475,11 @@ def cmd_stocks(args: argparse.Namespace) -> None:
         "sector": getattr(args, "sector", None), "isEtf": getattr(args, "is_etf", None), "isFund": getattr(args, "is_fund", None),
         "isActivelyTrading": getattr(args, "is_actively_trading", None),
     })
-    public_cmds = {"quote", "profile", "screener", "universe", "normalize-symbol", "exchanges"}
+    public_cmds = {"quote", "profile", "screener", "universe", "normalize-symbol", "exchanges", "alias-lookup"}
+    if args.stocks_cmd == "alias-lookup":
+        raw = getattr(args, "raw", "")
+        _print(_public_get("/v1/stocks/alias-lookup", params={"raw": raw}, error="alias_lookup_failed"))
+        return
     getter = _public_get if args.stocks_cmd in public_cmds else _authenticated_get
     _print(getter(routes[args.stocks_cmd], params=params, error="stocks_request_failed"))
 
@@ -812,6 +816,9 @@ def main() -> None:
         c.set_defaults(func=cmd_stocks)
     c = stocks_sub.add_parser("normalize-symbol", help="Normalize stock symbol (600519.SH -> 600519.SS; .BJ unsupported in current phase)")
     c.add_argument("--symbol", required=True)
+    c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("alias-lookup", help="Resolve company name / raw ticker → tradeable symbol (e.g. 'SK HYNIX' → 000660.KS)")
+    c.add_argument("--raw", required=True, help="Raw company name or ticker to resolve, e.g. 'SK HYNIX', 'APPL', '3105'")
     c.set_defaults(func=cmd_stocks)
     c = stocks_sub.add_parser("exchanges", help="List stock exchange support metadata, including A-share SHH/SHZ")
     c.set_defaults(func=cmd_stocks)
