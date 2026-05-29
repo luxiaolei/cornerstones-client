@@ -1099,7 +1099,7 @@ cornerstones-client macro event-window --symbol XAUUSD --currency USD --importan
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"XAUUSD","currency":"USD","event_window_state":"near_high_importance_event","blackout_suggestion":"caution","events":[{"event":"FOMC","importance":"high"}],"provenance":"fmp","degraded":false}
+{"symbol":"XAUUSD","currency":"USD","event_window_state":"near_high_importance_event","blackout_suggestion":"caution","events":[{"event":"FOMC","importance":"high"}],"provenance":"cornerstones_macro","degraded":false}
 ```
 
 Note: macro event windows are objective risk-context evidence only. They are not execution recommendations.

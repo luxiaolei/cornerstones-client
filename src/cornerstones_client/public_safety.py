@@ -35,6 +35,8 @@ _EXACT_VALUE_REPLACEMENTS = {
     "ib_options_quote_missing": "cornerstones_options_quote_missing",
     "ib_options_quotes_missing": "cornerstones_options_quotes_missing",
     "ib_options_quotes_partial": "cornerstones_options_quotes_partial",
+    "ib_market_data_competing_live_session": "cornerstones_options_competing_live_session",
+    "fmp_options_experimental": "cornerstones_options_public_fallback",
     "mt5+fmp+fmp+fmp+adanos": "cornerstones_gold_context",
 }
 
