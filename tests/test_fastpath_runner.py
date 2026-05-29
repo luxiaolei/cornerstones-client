@@ -11,6 +11,20 @@ from urllib.error import HTTPError
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _clear_fastpath_operator_env(monkeypatch):
+    for name in (
+        "CORNERSTONES_CONFIG_DIR",
+        "CORNERSTONES_CONFIG_PATH",
+        "CORNERSTONES_CREDENTIALS_PATH",
+        "CORNERSTONES_FASTPATH_DEFAULT_BASE_URL",
+        "CORNERSTONES_BASE_URL",
+        "CORNERSTONES_API_BASE_URL",
+        "CORNERSTONES_API_KEY",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+
 def test_fastpath_route_mapping_covers_phase1_surfaces():
     from cornerstones_client.fastpath.routes import match_route
 
@@ -328,6 +342,24 @@ def test_fastpath_config_env_base_is_explicit_override(monkeypatch, tmp_path):
     assert config.base_url == "http://env-api.test"
     assert config.api_key == "env"
     assert config.source == "env"
+
+
+def test_fastpath_config_ignores_public_api_env_without_key_when_core_exists(monkeypatch, tmp_path):
+    from cornerstones_client.fastpath.config import load_runtime_config
+
+    core_dir = tmp_path / "cornerstones"
+    core_dir.mkdir(parents=True)
+    (core_dir / "config.json").write_text(json.dumps({"base_url": "http://127.0.0.1:8100"}))
+    (core_dir / "credentials.json").write_text(json.dumps({"api_key": "core"}))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    monkeypatch.setenv("CORNERSTONES_API_BASE_URL", "https://api.usecornerstones.com")
+    monkeypatch.delenv("CORNERSTONES_API_KEY", raising=False)
+
+    config = load_runtime_config()
+
+    assert config.base_url == "http://127.0.0.1:8100"
+    assert config.api_key == "core"
+    assert config.source == "core"
 
 
 def test_fastpath_request_json_sends_post_json_body(monkeypatch):

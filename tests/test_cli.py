@@ -61,6 +61,7 @@ def test_public_payload_sanitizer_hides_upstream_provider_labels():
         "provenance": "mt5+fmp+fmp+fmp+adanos",
         "message": "Multi-provider gold context [MT5/FMP/Adanos]",
         "fallback": {"from_provider": "okx", "to_provider": "bybit", "note": "OKX timeout"},
+        "option_contract": {"fallback": "ib_options_quote_missing", "chain_fallback": "ib_options_quotes_missing", "partial_reason": "ib_options_quotes_partial", "empty_fallback": "ib_options_empty"},
         "providers": {"mt5": {"ready": True}, "fmp": {"ready": True}},
         "orderflow": {"provider": "rithmic", "provenance": "cornerstones+rithmic:stream"},
         "chart": {"engine": "tradingview_widget_local", "exchange_resolved": "OANDA"},
@@ -72,6 +73,10 @@ def test_public_payload_sanitizer_hides_upstream_provider_labels():
     assert sanitized["provenance"] == "cornerstones_gold_context"
     assert sanitized["fallback"]["from_provider"] == "cornerstones_crypto"
     assert sanitized["fallback"]["to_provider"] == "cornerstones_crypto"
+    assert sanitized["option_contract"]["fallback"] == "cornerstones_options_quote_missing"
+    assert sanitized["option_contract"]["chain_fallback"] == "cornerstones_options_quotes_missing"
+    assert sanitized["option_contract"]["partial_reason"] == "cornerstones_options_quotes_partial"
+    assert sanitized["option_contract"]["empty_fallback"] == "cornerstones_options_empty"
     assert sorted(sanitized["providers"]) == ["cornerstones_equities", "cornerstones_market_data"]
     assert sanitized["orderflow"]["provider"] == "cornerstones_orderflow"
     assert sanitized["orderflow"]["provenance"] == "cornerstones_orderflow:stream"

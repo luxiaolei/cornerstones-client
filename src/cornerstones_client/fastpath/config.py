@@ -23,7 +23,9 @@ def _xdg_config_home() -> Path:
     return Path(xdg).expanduser() if xdg else Path.home() / ".config"
 
 
-def _load_json(path: Path) -> dict[str, Any]:
+def _load_json(path: Path | None) -> dict[str, Any]:
+    if path is None:
+        return {}
     try:
         if path.exists():
             data = json.loads(path.read_text())
@@ -32,6 +34,11 @@ def _load_json(path: Path) -> dict[str, Any]:
     except Exception:
         return {}
     return {}
+
+
+def _env_path(name: str) -> Path | None:
+    raw = os.getenv(name)
+    return Path(raw).expanduser() if raw else None
 
 
 def _has_payload(payload: dict[str, Any]) -> bool:
@@ -48,18 +55,25 @@ def load_runtime_config() -> RuntimeConfig:
     This avoids sending a stored bearer to a different env/client host.
     """
     home = _xdg_config_home()
-    core_config = _load_json(home / "cornerstones" / "config.json")
-    core_credentials = _load_json(home / "cornerstones" / "credentials.json")
+    explicit_config_dir = _env_path("CORNERSTONES_CONFIG_DIR")
+    explicit_core_config = _load_json(_env_path("CORNERSTONES_CONFIG_PATH"))
+    explicit_core_credentials = _load_json(_env_path("CORNERSTONES_CREDENTIALS_PATH"))
+    if explicit_config_dir is not None:
+        explicit_core_config = explicit_core_config or _load_json(explicit_config_dir / "config.json")
+        explicit_core_credentials = explicit_core_credentials or _load_json(explicit_config_dir / "credentials.json")
+    core_config = explicit_core_config or _load_json(home / "cornerstones" / "config.json")
+    core_credentials = explicit_core_credentials or _load_json(home / "cornerstones" / "credentials.json")
     client_config = _load_json(home / "cornerstones-client" / "config.json")
 
-    env_base_url = os.getenv("CORNERSTONES_BASE_URL") or os.getenv("CORNERSTONES_API_BASE_URL")
+    env_core_base_url = os.getenv("CORNERSTONES_BASE_URL")
+    env_api_base_url = os.getenv("CORNERSTONES_API_BASE_URL")
     env_api_key = os.getenv("CORNERSTONES_API_KEY")
 
     fastpath_default_url = os.getenv("CORNERSTONES_FASTPATH_DEFAULT_BASE_URL") or DEFAULT_LOCAL_BASE_URL
 
-    if env_base_url:
+    if env_core_base_url:
         return RuntimeConfig(
-            str(env_base_url).rstrip("/"),
+            str(env_core_base_url).rstrip("/"),
             str(env_api_key) if env_api_key else None,
             source="env",
         )
@@ -78,6 +92,13 @@ def load_runtime_config() -> RuntimeConfig:
             str(client_config.get("api_base_url") or DEFAULT_CLIENT_API_BASE_URL).rstrip("/"),
             str(api_key) if api_key else None,
             source="client",
+        )
+
+    if env_api_base_url:
+        return RuntimeConfig(
+            str(env_api_base_url).rstrip("/"),
+            str(env_api_key) if env_api_key else None,
+            source="env",
         )
 
     return RuntimeConfig(str(fastpath_default_url).rstrip("/"), str(env_api_key) if env_api_key else None, source="core_default")

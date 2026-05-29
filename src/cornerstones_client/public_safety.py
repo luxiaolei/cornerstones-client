@@ -24,6 +24,17 @@ _EXACT_VALUE_REPLACEMENTS = {
     "cornerstones+ib:top_of_book": "cornerstones_options:top_of_book",
     "ib_depth": "cornerstones_options_depth",
     "ib_options_primary": "cornerstones_options_primary",
+    "ib_gateway_unavailable": "cornerstones_options_gateway_unavailable",
+    "ib_not_connected": "cornerstones_options_not_connected",
+    "ib_underlying_unqualified": "cornerstones_options_underlying_unqualified",
+    "ib_underlying_quote_missing": "cornerstones_options_underlying_quote_missing",
+    "ib_no_options_chain": "cornerstones_options_no_options_chain",
+    "ib_options_timeout": "cornerstones_options_timeout",
+    "ib_options_empty": "cornerstones_options_empty",
+    "ib_options_error": "cornerstones_options_error",
+    "ib_options_quote_missing": "cornerstones_options_quote_missing",
+    "ib_options_quotes_missing": "cornerstones_options_quotes_missing",
+    "ib_options_quotes_partial": "cornerstones_options_quotes_partial",
     "mt5+fmp+fmp+fmp+adanos": "cornerstones_gold_context",
 }
 
