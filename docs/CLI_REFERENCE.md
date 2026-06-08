@@ -684,8 +684,26 @@ cornerstones-client stocks context --symbol AAPL --bars-count 5
 Example output (redacted / shape-preserving):
 
 ```json
-{"symbol":"AAPL","context":{"quote":{},"profile":{},"optionability":{}},"degraded":false}
+{"symbol":"AAPL","context":{"quote":{},"extended_hours":{"data":{"provider_session_scope":"combined_extended_hours","observed_session":"after_hours","last_trade_price":189.1}},"profile":{},"optionability":{}},"degraded":false}
 ```
+
+### `stocks extended-hours`
+
+Command:
+
+```bash
+cornerstones-client stocks extended-hours --symbol AAPL --session extended
+cornerstones-client stocks extended-hours --symbol AAPL --session pre-market
+cornerstones-client stocks extended-hours --symbol AAPL --session after-hours
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"AAPL","surface":"stocks_extended_hours","items":[{"provider_session_scope":"combined_extended_hours","observed_session":"after_hours","bid_price":189.0,"ask_price":189.2,"extended_mid_price":189.1,"last_trade_price":189.12}],"degraded":false}
+```
+
+FMP reports combined extended-hours scope; rely on `observed_session` to distinguish pre-market vs after-hours timing when possible.
 
 ### `stocks indicators`
 

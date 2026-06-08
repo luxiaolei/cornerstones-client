@@ -39,6 +39,7 @@ def test_public_docs_capture_current_access_matrix():
         "stocks price-targets",
         "stocks ratios",
         "stocks key-metrics",
+        "stocks extended-hours",
         "stocks research-context",
         "stock research inputs such as transcripts, analyst estimates, ratings, price targets, ratios, and key metrics",
         "filings --provider sec",

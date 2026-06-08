@@ -493,6 +493,15 @@ def match_route(argv: Sequence[str]) -> RouteSpec | None:
         )
         return None if params is None else _spec("/v1/stocks/context", params)
 
+    if tokens[:2] == ["stocks", "extended-hours"]:
+        params = _parse_flags(
+            tokens[2:],
+            defaults={"symbol": "AAPL", "session": "extended"},
+            allowed={"symbol", "session"},
+            choices={"session": {"extended", "pre-market", "after-hours"}},
+        )
+        return None if params is None else _spec("/v1/stocks/extended-hours", params)
+
     if tokens[:2] == ["stocks", "imbalance-window"]:
         params = _parse_flags(
             tokens[2:],

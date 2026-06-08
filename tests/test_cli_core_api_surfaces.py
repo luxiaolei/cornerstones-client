@@ -199,6 +199,7 @@ def test_stocks_facts_command_hits_sec_company_facts_surface(monkeypatch, capsys
         (["stocks", "ratios", "--symbol", "AAPL", "--period", "ttm", "--limit", "5"], "/v1/stocks/ratios", {"symbol": "AAPL", "period": "ttm", "limit": 5}),
         (["stocks", "key-metrics", "--symbol", "AAPL", "--period", "annual", "--limit", "5"], "/v1/stocks/key-metrics", {"symbol": "AAPL", "period": "annual", "limit": 5}),
         (["stocks", "research-context", "--symbol", "AAPL", "--sections", "transcripts,analyst,valuation", "--limit-per-section", "2", "--include-explanations"], "/v1/stocks/research-context", {"symbol": "AAPL", "sections": "transcripts,analyst,valuation", "limit_per_section": 2, "include_explanations": True}),
+        (["stocks", "extended-hours", "--symbol", "AAPL", "--session", "pre-market"], "/v1/stocks/extended-hours", {"symbol": "AAPL", "session": "pre-market"}),
     ],
 )
 def test_stock_research_commands_hit_authenticated_mvp_a_surfaces(monkeypatch, capsys, argv, route, params):
@@ -236,6 +237,20 @@ def test_stock_research_help_is_provider_safe(capsys, monkeypatch):
     output = capsys.readouterr().out
     assert "research context" in output.lower()
     assert "provider" not in output.lower()
+
+
+def test_extended_hours_help_exposes_session_contract(capsys, monkeypatch):
+    monkeypatch.setattr("sys.argv", ["cornerstones-client", "stocks", "extended-hours", "--help"])
+
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "extended-hours" in output.lower()
+    assert "pre-market" in output
+    assert "after-hours" in output
+    assert "combined" in output.lower()
 
 
 def test_orderflow_summary_command_hits_orderflow_summary_surface(monkeypatch, capsys):

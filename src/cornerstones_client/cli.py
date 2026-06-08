@@ -458,7 +458,7 @@ def cmd_stocks(args: argparse.Namespace) -> None:
         "earnings": "/v1/stocks/earnings", "filings": "/v1/stocks/filings", "facts": "/v1/stocks/facts", "corporate-actions": "/v1/stocks/corporate-actions",
         "transcripts": "/v1/stocks/transcripts", "analyst-estimates": "/v1/stocks/analyst-estimates", "ratings": "/v1/stocks/ratings",
         "price-targets": "/v1/stocks/price-targets", "ratios": "/v1/stocks/ratios", "key-metrics": "/v1/stocks/key-metrics",
-        "research-context": "/v1/stocks/research-context",
+        "research-context": "/v1/stocks/research-context", "extended-hours": "/v1/stocks/extended-hours",
         "screener": "/v1/stocks/screener", "universe": "/v1/stocks/universe",
         "normalize-symbol": "/v1/stocks/symbols/normalize", "exchanges": "/v1/stocks/exchanges",
     }
@@ -471,6 +471,7 @@ def cmd_stocks(args: argparse.Namespace) -> None:
         "year": getattr(args, "year", None), "quarter": getattr(args, "quarter", None), "include_text": getattr(args, "include_text", None),
         "include_consensus": getattr(args, "include_consensus", None), "sections": getattr(args, "sections", None),
         "limit_per_section": getattr(args, "limit_per_section", None), "include_explanations": getattr(args, "include_explanations", None),
+        "session": getattr(args, "session", None),
         "marketCapMoreThan": getattr(args, "market_cap_more_than", None), "volumeMoreThan": getattr(args, "volume_more_than", None),
         "sector": getattr(args, "sector", None), "isEtf": getattr(args, "is_etf", None), "isFund": getattr(args, "is_fund", None),
         "isActivelyTrading": getattr(args, "is_actively_trading", None),
@@ -881,6 +882,10 @@ def main() -> None:
     c.add_argument("--sections")
     c.add_argument("--limit-per-section", type=int, default=3)
     c.add_argument("--include-explanations", action=argparse.BooleanOptionalAction, default=None)
+    c.set_defaults(func=cmd_stocks)
+    c = stocks_sub.add_parser("extended-hours", help="Fetch FMP combined extended-hours quote/trade overlay with observed_session")
+    c.add_argument("--symbol", required=True)
+    c.add_argument("--session", default="extended", choices=["extended", "pre-market", "after-hours"], help="Requested session label; provider scope is combined extended-hours")
     c.set_defaults(func=cmd_stocks)
     c = stocks_sub.add_parser("screener"); c.add_argument("--market-cap-more-than"); c.add_argument("--volume-more-than"); c.add_argument("--exchange", help="Exchange filter, e.g. NASDAQ, NYSE, SHH, SHZ"); c.add_argument("--sector"); c.add_argument("--is-etf"); c.add_argument("--is-fund"); c.add_argument("--is-actively-trading"); c.add_argument("--limit", type=int, default=25); c.set_defaults(func=cmd_stocks)
     c = stocks_sub.add_parser("universe"); c.add_argument("--preset", default="us-stocks-liquid", help="Universe preset, e.g. us-stocks-liquid or china-a-shares-largecap"); c.add_argument("--limit", type=int, default=25); c.set_defaults(func=cmd_stocks)
