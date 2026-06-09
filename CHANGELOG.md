@@ -4,6 +4,11 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.23
+
+- Added `stocks extended-hours` client/API parity, including combined extended-hours quote/trade overlay fields and `observed_session` session inference.
+- Updated `stocks context` documentation examples to show the extended-hours component.
+
 ## 0.1.21
 
 - Added client/API parity for `stocks imbalance-window`, an authenticated stock auction imbalance rolling window surface with objective observations, trend features, data quality, and data-contract readiness.

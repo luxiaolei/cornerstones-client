@@ -385,7 +385,7 @@ def test_stocks_imbalance_window_command_hits_window_surface(monkeypatch, capsys
 
 
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.21"
+    assert __version__ == "0.1.23"
 
 
 def test_options_chain_command_maps_truth_surface_params(monkeypatch, capsys):

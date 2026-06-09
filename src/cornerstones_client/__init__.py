@@ -12,7 +12,7 @@ from .client import (
     MacroEventWindowResponse,
 )
 
-__version__ = "0.1.21"
+__version__ = "0.1.23"
 
 __all__ = [
     "__version__",

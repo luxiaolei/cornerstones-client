@@ -883,7 +883,7 @@ def main() -> None:
     c.add_argument("--limit-per-section", type=int, default=3)
     c.add_argument("--include-explanations", action=argparse.BooleanOptionalAction, default=None)
     c.set_defaults(func=cmd_stocks)
-    c = stocks_sub.add_parser("extended-hours", help="Fetch FMP combined extended-hours quote/trade overlay with observed_session")
+    c = stocks_sub.add_parser("extended-hours", help="Fetch combined extended-hours quote/trade overlay with observed_session")
     c.add_argument("--symbol", required=True)
     c.add_argument("--session", default="extended", choices=["extended", "pre-market", "after-hours"], help="Requested session label; provider scope is combined extended-hours")
     c.set_defaults(func=cmd_stocks)

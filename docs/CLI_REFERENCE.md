@@ -1,11 +1,11 @@
 # Cornerstones Client CLI Reference
 
-Machine-readable customer CLI reference for `cornerstones-client==0.1.21`.
+Machine-readable customer CLI reference for `cornerstones-client==0.1.23`.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.21
+python -m pip install -U cornerstones-client==0.1.23
 ```
 
 ## Auth/config
@@ -703,7 +703,7 @@ Example output (redacted / shape-preserving):
 {"symbol":"AAPL","surface":"stocks_extended_hours","items":[{"provider_session_scope":"combined_extended_hours","observed_session":"after_hours","bid_price":189.0,"ask_price":189.2,"extended_mid_price":189.1,"last_trade_price":189.12}],"degraded":false}
 ```
 
-FMP reports combined extended-hours scope; rely on `observed_session` to distinguish pre-market vs after-hours timing when possible.
+The upstream data source reports combined extended-hours scope; rely on `observed_session` to distinguish pre-market vs after-hours timing when possible.
 
 ### `stocks indicators`
 

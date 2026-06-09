@@ -20,7 +20,7 @@ def test_public_docs_capture_current_access_matrix():
         "Orderflow requires **Max**",
         "All `orderflow ...` commands are Max-only",
         "The key is a Cornerstones API key",
-        "Current documented release: `0.1.21`",
+        "Current documented release: `0.1.23`",
         "stocks imbalance-window",
         "auction imbalance rolling window",
         "fx options-proxy",

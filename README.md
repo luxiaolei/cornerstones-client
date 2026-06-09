@@ -4,12 +4,12 @@
 
 It exposes **customer-safe read surfaces** plus **customer-owned alert/event subscription create/delete flows**. It intentionally does **not** expose admin/operator/internal/destructive flows such as alert dispatch/replay/resolve/test, event receipt submission/export, order-flow collection jobs, or maintenance jobs.
 
-Current documented release: `0.1.21`.
+Current documented release: `0.1.23`.
 
 ## Install
 
 ```bash
-python -m pip install -U cornerstones-client==0.1.21
+python -m pip install -U cornerstones-client==0.1.23
 ```
 
 Requirements:
@@ -801,7 +801,7 @@ Example output (redacted / shape-preserving):
 {"symbol":"AAPL","surface":"stocks_extended_hours","items":[{"provider_session_scope":"combined_extended_hours","observed_session":"after_hours","bid_price":189.0,"ask_price":189.2,"extended_mid_price":189.1,"last_trade_price":189.12}],"degraded":false}
 ```
 
-FMP extended-hours quote/trade endpoints report a combined extended-hours scope. Use `requested_session` plus `observed_session`; do not assume provider has separate pre-market vs after-hours endpoint semantics.
+The upstream extended-hours quote/trade source reports a combined extended-hours scope. Use `requested_session` plus `observed_session`; do not assume separate pre-market vs after-hours endpoint semantics.
 
 ### `stocks indicators`
 
