@@ -382,6 +382,10 @@ def cmd_fx(args: argparse.Namespace) -> None:
         params = _compact_params({"symbol": args.symbol, "timeframe": args.timeframe, "basis": args.basis})
         _print(_authenticated_get("/v1/fx/volume-profile", params=params, error="fx_volume_profile_failed"))
         return
+    if args.fx_cmd == "volume-profile-pack":
+        params = _compact_params({"symbol": args.symbol, "basis": args.basis})
+        _print(_authenticated_get("/v1/fx/volume-profile/pack", params=params, error="fx_volume_profile_pack_failed"))
+        return
     if args.fx_cmd == "options-proxy":
         params = _compact_params({"symbol": args.symbol})
         _print(_authenticated_get("/v1/fx/options-proxy", params=params, error="fx_options_proxy_failed"))
@@ -730,6 +734,14 @@ def main() -> None:
     fx_volume_profile.add_argument("--timeframe", default="15m", choices=["15m", "30m", "1h", "M15", "M30", "H1"], help="Aggregation window over GC proxy buckets")
     fx_volume_profile.add_argument("--basis", default="gc_futures", choices=["gc_futures", "gc_futures_orderflow_proxy"], help="Proxy basis; POC/VAH/VAL are conditional on profile_quality")
     fx_volume_profile.set_defaults(func=cmd_fx)
+    fx_volume_profile_pack = fx_sub.add_parser(
+        "volume-profile-pack",
+        help="[Layer 2] Fetch 15m + 1h + current-session XAUUSD GC futures proxy pack; not centralized spot volume",
+        description="Fetch a multi-layer XAUUSD volume-profile evidence pack from GC futures orderflow proxy buckets: 15m + 1h + current-session. Not centralized spot volume. No trading recommendation.",
+    )
+    fx_volume_profile_pack.add_argument("--symbol", default="XAUUSD", help="Supported symbol: XAUUSD")
+    fx_volume_profile_pack.add_argument("--basis", default="gc_futures", choices=["gc_futures", "gc_futures_orderflow_proxy"], help="GC futures proxy basis; not centralized spot volume")
+    fx_volume_profile_pack.set_defaults(func=cmd_fx)
     fx_options_proxy = fx_sub.add_parser("options-proxy", help="[Layer 2] Fetch ETF options proxy data facts for an FX pair; downstream agents decide usage")
     fx_options_proxy.add_argument("--symbol", required=True)
     fx_options_proxy.set_defaults(func=cmd_fx)

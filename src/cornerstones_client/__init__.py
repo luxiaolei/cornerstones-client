@@ -8,11 +8,12 @@ from .client import (
     FXLevelsResponse,
     FXOpeningRangeResponse,
     FXPriceActionResponse,
+    FXVolumeProfilePackResponse,
     FXVolumeProfileResponse,
     MacroEventWindowResponse,
 )
 
-__version__ = "0.1.23"
+__version__ = "0.1.24"
 
 __all__ = [
     "__version__",
@@ -23,6 +24,7 @@ __all__ = [
     "FXLevelsResponse",
     "FXOpeningRangeResponse",
     "FXPriceActionResponse",
+    "FXVolumeProfilePackResponse",
     "FXVolumeProfileResponse",
     "MacroEventWindowResponse",
 ]

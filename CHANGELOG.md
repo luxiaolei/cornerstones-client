@@ -4,6 +4,12 @@ All notable changes to `cornerstones-client` will be documented in this file.
 
 ## Unreleased
 
+## 0.1.24
+
+- Added `fx volume-profile-pack` client/API parity for Core `/v1/fx/volume-profile/pack` multi-layer XAUUSD GC-futures proxy evidence.
+- Added typed `client.fx.volume_profile_pack(...)` wrapper and help/docs for 15m + 1h + current-session profile packs.
+- Preserved GC-futures proxy disclosure: not centralized XAUUSD spot volume and no trading recommendation.
+
 ## 0.1.23
 
 - Added `stocks extended-hours` client/API parity, including combined extended-hours quote/trade overlay fields and `observed_session` session inference.

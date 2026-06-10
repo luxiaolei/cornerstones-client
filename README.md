@@ -45,10 +45,11 @@ levels = client.fx.levels("XAUUSD")
 opening_range = client.fx.opening_range("XAUUSD", session="london", minutes=30)
 price_action = client.fx.price_action("XAUUSD", timeframe="H1", bars=120)
 volume_profile = client.fx.volume_profile("XAUUSD", timeframe="15m", basis="gc_futures")
+volume_profile_pack = client.fx.volume_profile_pack("XAUUSD", basis="gc_futures")
 event_window = client.macro.event_window("XAUUSD", currency="USD", importance="high")
 ```
 
-Typed wrappers preserve Core contract metadata: `as_of`, `freshness_status`, `degraded`, `fallback`, and `provenance`; XAU volume-profile wrappers also preserve `proxy`, `source_symbol`, `basis`, and `profile_quality`. Use `.to_dict()` for full raw payload access, including future fields.
+Typed wrappers preserve Core contract metadata: `as_of`, `freshness_status`, `degraded`, `fallback`, and `provenance`; XAU volume-profile wrappers also preserve `proxy`, `source_symbol`, `basis`, `profile_quality`, and pack layer fields such as `layer_order`, `primary_layer`, and `trade_grade_layers`. Use `.to_dict()` for full raw payload access, including future fields.
 
 Safety boundary: these methods expose read-only market structure and macro context only. They grant no trading recommendation, account, risk, or execution permissions. XAU volume profile is a GC futures proxy, not spot centralized volume.
 
@@ -85,6 +86,7 @@ cornerstones-client alerts subscribe \
 - `fx opening-range`
 - `fx price-action`
 - `fx volume-profile`
+- `fx volume-profile-pack`
 - `fx options-proxy`
 - `fx positioning`
 - `context fx`
@@ -452,6 +454,22 @@ Example output (redacted / shape-preserving):
 ```
 
 Note: this is GC futures orderflow proxy evidence for XAUUSD, not centralized spot volume. Use `profile_quality`, `degraded`, and `fallback` before consuming POC/VAH/VAL.
+
+### `fx volume-profile-pack`
+
+Command:
+
+```bash
+cornerstones-client fx volume-profile-pack --symbol XAUUSD --basis gc_futures
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","source_symbol":"GC","layer_order":["micro_15m","context_1h","current_session"],"primary_layer":"micro_15m","trade_grade_layers":["current_session"],"all_layers_trade_grade":false,"layers":[{"layer":"micro_15m","timeframe":"15m","proxy":true},{"layer":"context_1h","timeframe":"1h","proxy":true},{"layer":"current_session","timeframe":"session:asia","proxy":true}],"degraded":false}
+```
+
+Note: pack is 15m + 1h + current-session GC futures proxy evidence for XAUUSD, not centralized spot volume. Each layer carries its own sample diagnostics; downstream agents decide trade use.
 
 ### `fx options-proxy`
 

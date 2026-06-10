@@ -10,6 +10,7 @@ from cornerstones_client import (
     FXLevelsResponse,
     FXOpeningRangeResponse,
     FXPriceActionResponse,
+    FXVolumeProfilePackResponse,
     FXVolumeProfileResponse,
     MacroEventWindowResponse,
 )
@@ -44,6 +45,7 @@ def test_typed_fx_methods_hit_structure_surface_routes_and_params():
             "/v1/fx/opening-range": {"symbol": "XAUUSD", "session": "london", "minutes": 30, "window_minutes": 30, "as_of": "2026-05-26T10:00:00Z", "freshness_status": "fresh", "degraded": False, "fallback": None, "provenance": "mt5"},
             "/v1/fx/price-action": {"symbol": "XAUUSD", "timeframe": "H1", "bars_count": 120, "trend_state": "range", "as_of": "2026-05-26T10:00:00Z", "freshness_status": "fresh", "degraded": False, "fallback": None, "provenance": "mt5"},
             "/v1/fx/volume-profile": {"symbol": "XAUUSD", "timeframe": "15m", "basis": "gc_futures_orderflow_proxy", "source_symbol": "GC", "proxy": True, "profile_quality": "derived_orderflow_only", "as_of": "2026-05-26T10:00:00Z", "freshness_status": "fresh", "degraded": False, "fallback": None, "provenance": "orderflow"},
+            "/v1/fx/volume-profile/pack": {"symbol": "XAUUSD", "source_symbol": "GC", "layer_order": ["micro_15m", "context_1h", "current_session"], "primary_layer": "micro_15m", "trade_grade_layers": ["current_session"], "all_layers_trade_grade": False, "layers": [{"layer": "micro_15m", "symbol": "XAUUSD", "timeframe": "15m", "basis": "gc_futures_orderflow_proxy", "source_symbol": "GC", "proxy": True}], "as_of": "2026-06-10T10:00:00Z", "freshness_status": "fresh", "degraded": False, "fallback": None, "provenance": "orderflow"},
         }
     )
 
@@ -58,6 +60,13 @@ def test_typed_fx_methods_hit_structure_surface_routes_and_params():
     assert volume_profile.basis == "gc_futures_orderflow_proxy"
     assert volume_profile.profile_quality == "derived_orderflow_only"
     assert volume_profile.to_dict()["source_symbol"] == "GC"
+    profile_pack = client.fx.volume_profile_pack("XAUUSD", basis="gc_futures")
+    assert isinstance(profile_pack, FXVolumeProfilePackResponse)
+    assert profile_pack.layer_order == ["micro_15m", "context_1h", "current_session"]
+    assert profile_pack.primary_layer == "micro_15m"
+    assert profile_pack.trade_grade_layers == ["current_session"]
+    assert profile_pack.all_layers_trade_grade is False
+    assert profile_pack.layers[0]["layer"] == "micro_15m"
 
     assert [(req.url.path, dict(req.url.params)) for req in recorder.requests] == [
         ("/v1/fx/bars", {"symbol": "XAUUSD", "timeframe": "M15", "bars": "128"}),
@@ -65,6 +74,7 @@ def test_typed_fx_methods_hit_structure_surface_routes_and_params():
         ("/v1/fx/opening-range", {"symbol": "XAUUSD", "session": "london", "minutes": "30"}),
         ("/v1/fx/price-action", {"symbol": "XAUUSD", "timeframe": "H1", "bars": "120"}),
         ("/v1/fx/volume-profile", {"symbol": "XAUUSD", "timeframe": "15m", "basis": "gc_futures"}),
+        ("/v1/fx/volume-profile/pack", {"symbol": "XAUUSD", "basis": "gc_futures"}),
     ]
     assert all(req.headers["authorization"] == "Bearer ck_test" for req in recorder.requests)
 
@@ -105,6 +115,7 @@ def test_public_docs_describe_typed_structure_client_and_safety_boundaries():
         "client.fx.opening_range(\"XAUUSD\", session=\"london\", minutes=30)",
         "client.fx.price_action(\"XAUUSD\", timeframe=\"H1\", bars=120)",
         "client.fx.volume_profile(\"XAUUSD\", timeframe=\"15m\", basis=\"gc_futures\")",
+        "client.fx.volume_profile_pack(\"XAUUSD\", basis=\"gc_futures\")",
         "client.macro.event_window(\"XAUUSD\", currency=\"USD\", importance=\"high\")",
         "no trading recommendation, account, risk, or execution permissions",
         "XAU volume profile is a GC futures proxy, not spot centralized volume",

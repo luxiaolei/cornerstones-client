@@ -114,6 +114,17 @@ class FXVolumeProfileResponse(ContractResponse):
 
 
 @dataclass(frozen=True)
+class FXVolumeProfilePackResponse(ContractResponse):
+    symbol: str | None = None
+    source_symbol: str | None = None
+    layer_order: list[str] = field(default_factory=list)
+    primary_layer: str | None = None
+    trade_grade_layers: list[str] = field(default_factory=list)
+    all_layers_trade_grade: bool | None = None
+    layers: list[dict[str, Any]] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
 class MacroEventWindowResponse(ContractResponse):
     symbol: str | None = None
     currency: str | None = None
@@ -236,6 +247,18 @@ class FXNamespace:
             params=_compact_params({"symbol": symbol, "timeframe": timeframe, "basis": basis}),
         )
         return FXVolumeProfileResponse.from_payload(payload)
+
+    def volume_profile_pack(
+        self,
+        symbol: str,
+        *,
+        basis: str = "gc_futures",
+    ) -> FXVolumeProfilePackResponse:
+        payload = self._client._get(
+            "/v1/fx/volume-profile/pack",
+            params=_compact_params({"symbol": symbol, "basis": basis}),
+        )
+        return FXVolumeProfilePackResponse.from_payload(payload)
 
 
 class MacroNamespace:

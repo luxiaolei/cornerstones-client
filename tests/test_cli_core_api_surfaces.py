@@ -143,6 +143,7 @@ def test_fx_indicators_command_hits_currency_pair_indicators_surface(monkeypatch
         (["fx", "opening-range", "--symbol", "EURUSD", "--session", "london", "--minutes", "30", "--timeframe", "5m", "--bars", "600"], "/v1/fx/opening-range", {"symbol": "EURUSD", "session": "london", "minutes": 30, "timeframe": "5m", "bars": 600}),
         (["fx", "price-action", "--symbol", "XAUUSD", "--timeframe", "H1", "--bars", "120"], "/v1/fx/price-action", {"symbol": "XAUUSD", "timeframe": "H1", "bars": 120}),
         (["fx", "volume-profile", "--symbol", "XAUUSD", "--timeframe", "15m", "--basis", "gc_futures"], "/v1/fx/volume-profile", {"symbol": "XAUUSD", "timeframe": "15m", "basis": "gc_futures"}),
+        (["fx", "volume-profile-pack", "--symbol", "XAUUSD", "--basis", "gc_futures"], "/v1/fx/volume-profile/pack", {"symbol": "XAUUSD", "basis": "gc_futures"}),
     ],
 )
 def test_fx_structure_commands_hit_objective_structure_surfaces(monkeypatch, capsys, argv, route, params):
@@ -251,6 +252,19 @@ def test_extended_hours_help_exposes_session_contract(capsys, monkeypatch):
     assert "pre-market" in output
     assert "after-hours" in output
     assert "combined" in output.lower()
+
+
+def test_fx_volume_profile_pack_help_exposes_multi_layer_contract(capsys, monkeypatch):
+    monkeypatch.setattr("sys.argv", ["cornerstones-client", "fx", "volume-profile-pack", "--help"])
+
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "15m + 1h + current-session" in output
+    assert "GC futures" in output
+    assert "not centralized spot volume" in output
 
 
 def test_orderflow_summary_command_hits_orderflow_summary_surface(monkeypatch, capsys):
@@ -385,7 +399,7 @@ def test_stocks_imbalance_window_command_hits_window_surface(monkeypatch, capsys
 
 
 def test_package_version_matches_new_release():
-    assert __version__ == "0.1.23"
+    assert __version__ == "0.1.24"
 
 
 def test_options_chain_command_maps_truth_surface_params(monkeypatch, capsys):

@@ -317,6 +317,22 @@ Example output (redacted / shape-preserving):
 
 Layer note: GC futures orderflow proxy evidence for XAUUSD, not centralized spot volume. Check `profile_quality`, `degraded`, and `fallback` before consuming POC/VAH/VAL.
 
+### `fx volume-profile-pack`
+
+Command:
+
+```bash
+cornerstones-client fx volume-profile-pack --symbol XAUUSD --basis gc_futures
+```
+
+Example output (redacted / shape-preserving):
+
+```json
+{"symbol":"XAUUSD","source_symbol":"GC","layer_order":["micro_15m","context_1h","current_session"],"primary_layer":"micro_15m","trade_grade_layers":["current_session"],"all_layers_trade_grade":false,"layers":[{"layer":"micro_15m","timeframe":"15m","proxy":true},{"layer":"context_1h","timeframe":"1h","proxy":true},{"layer":"current_session","timeframe":"session:asia","proxy":true}],"degraded":false}
+```
+
+Layer note: 15m + 1h + current-session GC futures proxy evidence for XAUUSD, not centralized spot volume. Each layer carries sample diagnostics; no trading recommendation.
+
 ### `fx options-proxy`
 
 Command:
